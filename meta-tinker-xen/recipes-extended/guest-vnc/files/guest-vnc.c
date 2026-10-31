@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 /*
- * android-hdmi: show a Xen guest's PV framebuffer on dom0's HDMI monitor
+ * guest-vnc: show a Xen guest's PV framebuffer on dom0's HDMI monitor
  * and give the guest dom0's touchscreen, mouse and keyboard.
  *
  * QEMU (Xen's device model in dom0) serves the guest's framebuffer and
- * keyboard/pointer as a VNC server (android1.cfg: vnc=1, vnclisten=127.0.0.1).
+ * keyboard/pointer as a VNC server (guest config: vnc=1, vnclisten=127.0.0.1).
  * This is a minimal VNC client: raw encoding into /dev/fb0, centred, and
  * dom0 evdev input sent back as VNC pointer and key events.
  *
- *   android-hdmi [-H host] [-p port] [-f /dev/fb0] [-I input-glob | -I none]
- *   android-hdmi [-H host] [-p port] -t X,Y   (one tap at guest X,Y, then exit)
+ *   guest-vnc [-H host] [-p port] [-f /dev/fb0] [-I input-glob | -I none]
+ *   guest-vnc [-H host] [-p port] -t X,Y   (one tap at guest X,Y, then exit)
  *
  * -I picks the input devices forwarded to the guest (default all of
  * /dev/input/event*); with one screen per guest (display-map) each viewer
@@ -147,7 +147,7 @@ static void set_guest_size(unsigned int w, unsigned int h)
 	off_x = fb_w > w ? (fb_w - w) / 2 : 0;
 	off_y = fb_h > h ? (fb_h - h) / 2 : 0;
 	fb_clear();
-	printf("android-hdmi: guest %ux%u on %ux%u monitor at +%u+%u\n",
+	printf("guest-vnc: guest %ux%u on %ux%u monitor at +%u+%u\n",
 	       w, h, fb_w, fb_h, off_x, off_y);
 }
 
@@ -266,7 +266,7 @@ static int vnc_connect(const char *host, int port)
 	for (i = 1; i <= n && buf[i] != 1; i++)
 		;
 	if (i > n) {
-		fprintf(stderr, "android-hdmi: server needs a password\n");
+		fprintf(stderr, "guest-vnc: server needs a password\n");
 		goto fail;
 	}
 	buf[0] = 1;
@@ -365,7 +365,7 @@ static int vnc_message(void)
 			} else if (enc == -223) {
 				set_guest_size(get16(buf + 4), get16(buf + 6));
 			} else {
-				fprintf(stderr, "android-hdmi: encoding %d\n", enc);
+				fprintf(stderr, "guest-vnc: encoding %d\n", enc);
 				return -1;
 			}
 		}
@@ -382,7 +382,7 @@ static int vnc_message(void)
 			return -1;
 		return skip(get32(buf + 3));
 	default:
-		fprintf(stderr, "android-hdmi: message type %u\n", buf[0]);
+		fprintf(stderr, "guest-vnc: message type %u\n", buf[0]);
 		return -1;
 	}
 }
@@ -587,19 +587,19 @@ int main(int argc, char **argv)
 		var.green = (struct fb_bitfield){ 8, 8, 0 };
 		var.blue = (struct fb_bitfield){ 0, 8, 0 };
 		if (vnc_connect(host, port)) {
-			fprintf(stderr, "android-hdmi: cannot connect to %s:%d\n", host, port);
+			fprintf(stderr, "guest-vnc: cannot connect to %s:%d\n", host, port);
 			return 1;
 		}
 		send_pointer(1, x, y);
 		usleep(100000);
 		send_pointer(0, x, y);
 		usleep(100000);
-		printf("android-hdmi: tapped %d,%d\n", x, y);
+		printf("guest-vnc: tapped %d,%d\n", x, y);
 		return 0;
 	}
 	if (fb_open(fbdev))
 		return 1;
-	printf("android-hdmi: %s %ux%u, %u bpp\n", fbdev, fb_w, fb_h, var.bits_per_pixel);
+	printf("guest-vnc: %s %ux%u, %u bpp\n", fbdev, fb_w, fb_h, var.bits_per_pixel);
 
 	for (;;) {
 		struct pollfd pfd[MAX_INPUTS + 1];
@@ -610,7 +610,7 @@ int main(int argc, char **argv)
 				sleep(2);	/* guest not started yet */
 				continue;
 			}
-			printf("android-hdmi: connected to %s:%d\n", host, port);
+			printf("guest-vnc: connected to %s:%d\n", host, port);
 			if (request_update(0))
 				goto lost;
 		}
@@ -653,7 +653,7 @@ int main(int argc, char **argv)
 		}
 		continue;
 lost:
-		printf("android-hdmi: connection lost, retrying\n");
+		printf("guest-vnc: connection lost, retrying\n");
 		close(sock);
 		sock = -1;
 		fb_clear();

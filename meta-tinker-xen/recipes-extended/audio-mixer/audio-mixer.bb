@@ -1,7 +1,7 @@
-SUMMARY = "dom0 audio pipeline: vehicle chimes, media1 and android1 sound to the speaker"
+SUMMARY = "dom0 audio pipeline: vehicle chimes, media1 sound to the speaker"
 DESCRIPTION = "audio-mixer mixes the vehicle chimes (made in dom0, highest \
 priority: the guests are turned down while one plays), media1's video sound \
-(UDP) and android1's sound (TCP, paced by flow control) from xenbr0 into the \
+(UDP) from xenbr0 into the \
 board's speaker output with ALSA. vehicle-chimes turns the FreeRTOS guest's \
 real-time warnings into chimes; rear-camera asks for the reverse chime."
 LICENSE = "MIT"

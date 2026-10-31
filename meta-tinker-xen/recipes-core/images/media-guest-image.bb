@@ -17,7 +17,7 @@ IMAGE_ROOTFS_EXTRA_SPACE = "65536"
 # SSH (scp files to /home/root/media), key logins only (TINKER_SSH_KEY)
 inherit tinker-ssh
 
-# On xenbr0 next to dom0 (192.168.100.1, gateway with NAT) and android1 (.3)
+# On xenbr0 next to dom0 (192.168.100.1, gateway with NAT) and media1 (.4)
 MEDIA_GUEST_IP ?= "192.168.100.4"
 ROOTFS_POSTPROCESS_COMMAND += "media_guest_setup;"
 media_guest_setup[vardeps] += "MEDIA_GUEST_IP"

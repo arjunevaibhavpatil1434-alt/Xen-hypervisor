@@ -1,7 +1,6 @@
 SUMMARY = "dom0 and guest consoles side by side on the serial line"
 DESCRIPTION = "consoles opens one tmux session over the board's serial \
-console with four panes: a dom0 shell, xl console rtos1, xl console \
-android1 and xl console media1."
+console with three panes: a dom0 shell, xl console rtos1 and xl console media1."
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 

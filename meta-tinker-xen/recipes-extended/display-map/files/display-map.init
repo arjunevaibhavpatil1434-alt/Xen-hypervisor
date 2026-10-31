@@ -8,7 +8,7 @@
 ### END INIT INFO
 #
 # Starts one viewer per screen listed in SCREENS (/etc/default/display-map):
-# android-hdmi for a guest's PV framebuffer, cluster-hdmi for the instrument
+# guest-vnc for a guest's PV framebuffer, cluster-hdmi for the instrument
 # cluster, con2fb for dom0's text console; rear-camera around a viewer (it
 # pauses the viewer and shows the camera in reverse). Each screen waits for its display
 # (HDMI creates its framebuffer on the first hotplug, USB adapters when they
@@ -50,10 +50,10 @@ run_screen() {
         fi
         echo "$screen ($fb): $source"
         case "$source" in
-        vnc:*)   android-hdmi -f $fb -p ${source#vnc:} -I "$input" ;;
+        vnc:*)   guest-vnc -f $fb -p ${source#vnc:} -I "$input" ;;
         cluster) cluster-hdmi -f $fb -i $IFACE ;;
         rearcam:vnc:*)
-            rear-camera -f $fb -i $IFACE -- android-hdmi -f $fb -p ${source#rearcam:vnc:} -I "$input" ;;
+            rear-camera -f $fb -i $IFACE -- guest-vnc -f $fb -p ${source#rearcam:vnc:} -I "$input" ;;
         rearcam:cluster)
             rear-camera -f $fb -i $IFACE -- cluster-hdmi -f $fb -i $IFACE ;;
         rearcam) rear-camera -f $fb -i $IFACE ;;
@@ -85,7 +85,7 @@ stop)
     done
     # rear-camera first: it lets a viewer it has paused finish too
     killall rear-camera 2>/dev/null
-    killall android-hdmi cluster-hdmi 2>/dev/null
+    killall guest-vnc cluster-hdmi 2>/dev/null
     ;;
 restart)
     $0 stop; $0 start

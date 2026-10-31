@@ -31,7 +31,7 @@ fdt rsvmem add 0x79e00000 0x06200000
 fdt rm /thermal-zones/cpu-thermal/cooling-maps
 fdt set /chosen \#address-cells <1>
 fdt set /chosen \#size-cells <1>
-# sched=credit2 (Xen's default) for dom0 and Android. The RTOS gets CPU 3 in
+# sched=credit2 (Xen's default) for dom0 and Media. The RTOS gets CPU 3 in
 # its own cpupool with the real-time RTDS scheduler (see rtos1-start): RTDS is
 # "experimental" in Xen 4.16 and hit an assertion (rt.c:587) when it scheduled
 # all 4 CPUs while a 2-vCPU guest was created.

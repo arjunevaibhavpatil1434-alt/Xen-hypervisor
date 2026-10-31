@@ -311,19 +311,6 @@ static void poll_rtos_log(const char *path)
 	}
 }
 
-static void trim_guest_logs(void)
-{
-	static const char *const logs[] = {
-		"/var/log/xen/console/guest-android1.log",
-	};
-	struct stat st;
-	size_t i;
-
-	for (i = 0; i < sizeof(logs) / sizeof(logs[0]); i++)
-		if (stat(logs[i], &st) == 0 && st.st_size > LOG_LIMIT)
-			if (truncate(logs[i], 0)) { /* best effort */ }
-}
-
 static double cpu_temp(void)
 {
 	FILE *f = fopen("/sys/class/thermal/thermal_zone1/temp", "r");
@@ -559,7 +546,6 @@ int main(int argc, char **argv)
 			frames_10s = frames;
 			frames = 0;
 			clock_gettime(CLOCK_MONOTONIC, &last_rate);
-			trim_guest_logs();
 		}
 		if (demo) {
 			speed100 = 12800;

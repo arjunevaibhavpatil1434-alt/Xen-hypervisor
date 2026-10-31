@@ -8,10 +8,6 @@
  *            priority: the guests' sound is turned down while one plays.
  *   media    media1's video sound: S16LE stereo 48 kHz in UDP datagrams
  *            (its ffmpeg sends them, paced by -re).
- *   android  android1's sound: S16LE stereo 44.1 kHz over TCP (the guest's
- *            audio HAL writes /dev/eac, a pipe that netcat sends here).
- *            Reading only what the speaker plays makes TCP flow control
- *            pace the guest's audio at the speaker's rate.
  *
  * The network sources listen on dom0's xenbr0 address only and take data
  * only from their guest's address. A source is buffered 60 ms before it
@@ -20,7 +16,7 @@
  * and tries the card again every 2 s.
  *
  *   audio-mixer [-D alsa-device] [-a listen-addr] [-m port] [-M media1-addr]
- *               [-n port] [-N android1-addr] [-g media%,android%] [-v]
+ *               [-g media%%] [-v]
  *   audio-mixer -c warn|reverse|info   ask the running mixer for a chime
  *
  * Chime requests are names, one per line, in the FIFO /run/audio-mixer/chime;
@@ -76,9 +72,7 @@ struct source {
 
 static struct source media = { .name = "media", .rate = 48000, .port = 5601, .gain = 1.0f,
 			       .fd = -1, .conn = -1 };
-static struct source android = { .name = "android", .tcp = 1, .rate = 44100, .port = 5602,
-				 .gain = 1.0f, .fd = -1, .conn = -1 };
-static struct source *sources[] = { &media, &android };
+static struct source *sources[] = { &media };
 #define NSOURCES (sizeof(sources) / sizeof(sources[0]))
 
 static struct in_addr listen_addr;
@@ -403,27 +397,23 @@ int main(int argc, char **argv)
 
 	inet_aton("192.168.100.1", &listen_addr);
 	inet_aton("192.168.100.4", &media.peer);
-	inet_aton("192.168.100.3", &android.peer);
-	while ((opt = getopt(argc, argv, "D:a:m:M:n:N:g:c:v")) != -1) {
+	while ((opt = getopt(argc, argv, "D:a:m:M:g:c:v")) != -1) {
 		switch (opt) {
 		case 'D': dev = optarg; break;
 		case 'a': if (!inet_aton(optarg, &listen_addr)) return 2; break;
 		case 'm': media.port = atoi(optarg); break;
 		case 'M': if (!inet_aton(optarg, &media.peer)) return 2; break;
-		case 'n': android.port = atoi(optarg); break;
-		case 'N': if (!inet_aton(optarg, &android.peer)) return 2; break;
-		case 'g': if (sscanf(optarg, "%d,%d", &gm, &ga) != 2) return 2; break;
+		case 'g': if (sscanf(optarg, "%d", &gm) != 1) return 2; break;
 		case 'c': return chime_client(optarg);
 		case 'v': verbose = 1; break;
 		default:
 			fprintf(stderr, "usage: %s [-D alsa-device] [-a listen-addr] [-m port] "
-				"[-M media1-addr] [-n port] [-N android1-addr] [-g media%%,android%%] [-v]\n"
-				"       %s -c warn|reverse|info\n", argv[0], argv[0]);
+                        "[-M media1-addr] [-g media%%] [-v]\n"
+                        "       %s -c warn|reverse|info\n", argv[0], argv[0]);
 			return 2;
 		}
 	}
 	media.gain = gm / 100.0f;
-	android.gain = ga / 100.0f;
 	setvbuf(stdout, NULL, _IOLBF, 0);
 	signal(SIGPIPE, SIG_IGN);
 	snd_lib_error_set_handler(alsa_quiet);
