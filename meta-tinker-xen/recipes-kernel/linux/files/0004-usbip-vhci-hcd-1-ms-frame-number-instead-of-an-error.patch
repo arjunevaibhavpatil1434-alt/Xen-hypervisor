@@ -1,0 +1,35 @@
+From: Tinker Board Xen project
+Subject: [PATCH] usbip: vhci-hcd: 1 ms frame number instead of an error
+
+media1 gets the board's USB sound codec from dom0 with USB/IP. During
+playback snd-usb-audio calls usb_get_current_frame_number() thousands of
+times a second (playback delay estimate); vhci_hcd answered every call with
+"usb usb1: Not yet implemented" (rate limited, ~2500 lines per 5 s on the
+guest console). Return a 1 ms counter instead, like a USB frame number.
+
+--- a/drivers/usb/usbip/vhci_hcd.c	2026-11-03 19:24:02.822090808 +0530
++++ b/drivers/usb/usbip/vhci_hcd.c	2026-11-03 19:24:02.848090614 +0530
+@@ -8,6 +8,7 @@
+ #include <linux/file.h>
+ #include <linux/kernel.h>
+ #include <linux/kthread.h>
++#include <linux/ktime.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+@@ -1272,8 +1273,13 @@
+ 
+ static int vhci_get_frame_number(struct usb_hcd *hcd)
+ {
+-	dev_err_ratelimited(&hcd->self.root_hub->dev, "Not yet implemented\n");
+-	return 0;
++	/*
++	 * There is no bus clock behind USB/IP. Count 1 ms like a USB frame
++	 * number (11 bits): snd-usb-audio asks for it many times a second to
++	 * estimate its playback delay, and an error for each call floods the
++	 * log.
++	 */
++	return (int)(ktime_to_ms(ktime_get()) & 0x7ff);
+ }
+ 
+ #ifdef CONFIG_PM

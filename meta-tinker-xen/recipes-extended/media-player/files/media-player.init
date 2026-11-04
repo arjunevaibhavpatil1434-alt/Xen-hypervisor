@@ -9,6 +9,9 @@
 # media1 guest: loops everything in MEDIA_DIR on its PV framebuffer (shown on
 # a screen of its own by dom0's display-map); the river clip while MEDIA_DIR
 # is empty. Files copied in later are picked up on the next round.
+# The text console is detached from the screen while the player runs.
+# media-ctl (UDP port CTL_PORT) lets dom0's rear camera pause the video and
+# its sound while the car is in reverse.
 # Disable with ENABLED=0 in /etc/default/media-player.
 
 ENABLED=1
@@ -16,16 +19,29 @@ FBDEV=/dev/fb0
 MEDIA_DIR=/home/root/media
 DEFAULT=/usr/share/media-player/sixes-river-800x480.mp4
 SECS=5
+CTL_PORT=5602
 PIDFILE=/var/run/media-player.pid
 LOG=/var/log/media-player.log
 [ -r /etc/default/media-player ] && . /etc/default/media-player
+
+# fbcon_bind 0|1: detach the text console from the framebuffers, or give
+# them back
+fbcon_bind() {
+    for v in /sys/class/vtconsole/vtcon*; do
+        grep -qs "frame buffer" $v/name && echo $1 > $v/bind
+    done
+}
 
 case "$1" in
 start)
     [ "$ENABLED" = 1 ] || exit 0
     echo "Starting media-player ($MEDIA_DIR on $FBDEV)"
     mkdir -p $MEDIA_DIR
+    media-ctl -p $CTL_PORT >>$LOG 2>&1 </dev/null &
     ( while [ ! -c $FBDEV ]; do sleep 2; done
+      # the text console (fbcon, tty1) shares the framebuffer: detach it so
+      # no prompt, shell or blinking cursor is drawn over the video
+      fbcon_bind 0
       while :; do
           if [ -n "$(ls -A $MEDIA_DIR)" ]; then
               media-play -f $FBDEV -d $SECS $MEDIA_DIR
@@ -38,8 +54,12 @@ start)
     ;;
 stop)
     [ -f $PIDFILE ] && kill "$(cat $PIDFILE)" 2>/dev/null
+    killall media-ctl 2>/dev/null
+    # a paused ffmpeg only acts on SIGTERM once it runs again
     killall ffmpeg 2>/dev/null
+    killall -CONT ffmpeg 2>/dev/null
     rm -f $PIDFILE
+    fbcon_bind 1
     ;;
 restart)
     $0 stop; $0 start

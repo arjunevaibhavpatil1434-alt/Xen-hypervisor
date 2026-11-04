@@ -7,7 +7,11 @@ root filesystem goes to its own SD card partition (tinker-xen.wks)."
 require recipes-core/images/core-image-minimal.bb
 
 # needs LICENSE_FLAGS_ACCEPTED += "commercial" in local.conf (ffmpeg)
-IMAGE_INSTALL:append = " media-player ffmpeg"
+# The rear camera and the sound: USB devices dom0 exports with USB/IP
+# (usb-attach), the audio pipeline (audio-mixer) and the rear-view camera
+# (rear-camera: gear frames from dom0's media-link)
+IMAGE_INSTALL:append = " media-player ffmpeg \
+    usb-attach audio-mixer rear-camera alsa-utils-amixer alsa-utils-aplay"
 
 # Only the ext4 root filesystem, written to the SD card by dom0's image
 IMAGE_FSTYPES = "ext4"
@@ -16,6 +20,9 @@ IMAGE_ROOTFS_EXTRA_SPACE = "65536"
 
 # SSH (scp files to /home/root/media), key logins only (TINKER_SSH_KEY)
 inherit tinker-ssh
+
+# No login prompts: every console logs root in by itself
+inherit tinker-autologin
 
 # On xenbr0 next to dom0 (192.168.100.1, gateway with NAT) and media1 (.4)
 MEDIA_GUEST_IP ?= "192.168.100.4"

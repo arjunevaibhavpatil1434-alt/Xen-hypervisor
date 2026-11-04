@@ -1,0 +1,53 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          usb-attach
+# Required-Start:    networking
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Attach dom0's camera and sound codec (USB/IP)
+### END INIT INFO
+#
+# Attaches every USB device dom0 exports (usb-share) with USB/IP; checked
+# every 2 s, so a device dom0 exports later, or one that was disconnected,
+# is attached again. "usbip port" shows the attached devices.
+
+DOM0=192.168.100.1
+PIDFILE=/var/run/usb-attach.pid
+LOG=/var/log/usb-attach.log
+[ -r /etc/default/usb-attach ] && . /etc/default/usb-attach
+
+attach_loop() {
+    while :; do
+        attached=$(usbip port 2>/dev/null | sed -n 's,.*usbip://[^/]*/\([0-9.-]*\).*,\1,p')
+        for b in $(usbip list -r $DOM0 2>/dev/null | sed -n 's/^ *\([0-9][0-9]*-[0-9.]*\): .*/\1/p'); do
+            case " $(echo $attached) " in *" $b "*) continue ;; esac
+            echo "usb-attach: attaching $b from $DOM0"
+            usbip attach -r $DOM0 -b $b
+        done
+        sleep 2
+    done
+}
+
+case "$1" in
+start)
+    echo "Starting usb-attach (USB/IP from $DOM0)"
+    modprobe vhci-hcd
+    attach_loop >>$LOG 2>&1 </dev/null &
+    echo $! > $PIDFILE
+    ;;
+stop)
+    [ -f $PIDFILE ] && kill "$(cat $PIDFILE)" 2>/dev/null
+    rm -f $PIDFILE
+    for p in $(usbip port 2>/dev/null | sed -n 's/^Port \([0-9]*\):.*/\1/p'); do
+        usbip detach -p $p
+    done
+    ;;
+restart)
+    $0 stop; $0 start
+    ;;
+*)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
+exit 0

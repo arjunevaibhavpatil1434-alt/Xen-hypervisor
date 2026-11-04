@@ -12,7 +12,7 @@ CFLAGS    = $(ARCHFLAGS) -O2 -g -Wall -ffreestanding -fno-builtin -fno-common \
             -I. -I$(KERNEL)/include -I$(PORT)
 LDFLAGS   = $(ARCHFLAGS) -nostdlib -nostartfiles -static -no-pie -T guest.ld
 
-SRCS = startup.S main.c \
+SRCS = startup.S main.c tft.c \
        $(KERNEL)/tasks.c $(KERNEL)/list.c $(KERNEL)/queue.c \
        $(KERNEL)/portable/MemMang/heap_4.c \
        $(PORT)/port.c $(PORT)/portASM.S
@@ -23,7 +23,7 @@ vpath %.S . $(PORT)
 
 all: freertos-xen-guest.bin
 
-%.o: %.c FreeRTOSConfig.h
+%.o: %.c FreeRTOSConfig.h tft.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.S

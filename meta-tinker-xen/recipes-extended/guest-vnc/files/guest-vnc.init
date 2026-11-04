@@ -8,12 +8,13 @@
 ### END INIT INFO
 #
 # Runs guest-vnc when dom0 has a framebuffer (HDMI). It waits for the
-# guest's VNC server (QEMU, 127.0.0.1:5900) and reconnects when the guest
+# guest VNC server (QEMU, 127.0.0.1:$PORT, media1 by default) and reconnects when the guest
 # restarts. Off by default, like the experimental PV screen it shows (vfb in
 # a Xen guest configuration): enable with ENABLED=1 in /etc/default/guest-vnc.
 
 ENABLED=0
 FBDEV=/dev/fb0
+PORT=5901
 PIDFILE=/var/run/guest-vnc.pid
 LOG=/var/log/guest-vnc.log
 [ -r /etc/default/guest-vnc ] && . /etc/default/guest-vnc
@@ -25,7 +26,7 @@ start)
     # it on the first hotplug), so wait for it in the background
     echo "Starting guest-vnc (waits for $FBDEV, i.e. an HDMI monitor)"
     ( while [ ! -c $FBDEV ]; do sleep 2; done
-      while :; do guest-vnc -f $FBDEV; sleep 2; done ) >>$LOG 2>&1 </dev/null &
+      while :; do guest-vnc -f $FBDEV -p $PORT; sleep 2; done ) >>$LOG 2>&1 </dev/null &
     echo $! > $PIDFILE
     ;;
 stop)

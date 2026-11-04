@@ -1,0 +1,7 @@
+# USB devices dom0 exports to media1 with USB/IP (/etc/init.d/usb-share).
+# A device is exported when one of its interfaces has one of these USB
+# classes (hex): 0e video (the rear camera), 01 audio (the onboard sound
+# codec, and a webcam's microphone).
+CLASSES="0e 01"
+# Also export these devices, by vendor:product (lsusb), e.g. "0bda:4040"
+IDS=""

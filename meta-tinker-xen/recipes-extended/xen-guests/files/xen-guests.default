@@ -3,3 +3,13 @@
 XEN_GUESTS="rtos1 media1"
 # Seconds a Linux guest gets to shut down before it is destroyed
 SHUTDOWN_TIMEOUT=30
+# A guest with READY_<name> is checked after it starts: that text (extended
+# regex) must appear in /var/log/xen/console/guest-<name>.log within
+# READY_TIMEOUT seconds (and READY_PING_<name>, if set, must answer ping),
+# and no program may crash during its start; else it is started again, up to
+# READY_RETRIES times. Log: /var/log/xen-guests.log. Empty READY_<name>: not
+# checked.
+READY_media1="root@media1|media1 login:"
+READY_PING_media1=192.168.100.4
+READY_TIMEOUT=45
+READY_RETRIES=3

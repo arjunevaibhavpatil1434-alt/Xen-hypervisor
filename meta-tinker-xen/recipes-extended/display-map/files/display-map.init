@@ -14,7 +14,8 @@
 # (HDMI creates its framebuffer on the first hotplug, USB adapters when they
 # are plugged in) and is picked up again after an unplug.
 
-SCREENS="hdmi=vnc:5900"
+SCREENS="hdmi=vnc:5901"
+SCALE=fill
 IFACE=vcan0
 PIDDIR=/var/run/display-map
 LOG=/var/log/display-map.log
@@ -38,25 +39,59 @@ screen_fb() {
     esac
 }
 
+# Is the guest behind VNC port $1 showing its own screen yet? Until its
+# kernel connects its PV framebuffer, QEMU serves a placeholder ("This VM has
+# no graphic display device"), which must not reach the monitor. Connected:
+# the vfb backend with vncdisplay=<port - 5900> and its frontend are in
+# state 4.
+guest_fb_ready() {
+    want=$(($1 - 5900))
+    for d in $(xenstore-list /local/domain/0/backend/vfb 2>/dev/null); do
+        b=/local/domain/0/backend/vfb/$d/0
+        [ "$(xenstore-read $b/vncdisplay 2>/dev/null)" = "$want" ] || continue
+        [ "$(xenstore-read $b/state 2>/dev/null)" = 4 ] || continue
+        # and the guest side too: the backend entry of a guest that has
+        # just been destroyed can still read 4 for a moment
+        fe=$(xenstore-read $b/frontend 2>/dev/null)
+        [ -n "$fe" ] && [ "$(xenstore-read $fe/state 2>/dev/null)" = 4 ] && return 0
+    done
+    return 1
+}
+
 # Keep one screen's viewer running (in the background)
 run_screen() {
     screen=$1 source=$2
     eval input=\${INPUT_$screen:-none}
+    eval scale=\${SCALE_$screen:-$SCALE}
+    eval pause=\${PAUSE_$screen:-}
     while :; do
         fb=$(screen_fb $screen)
         if [ -z "$fb" ] || [ ! -c "$fb" ]; then
             sleep 2
             continue
         fi
-        echo "$screen ($fb): $source"
         case "$source" in
-        vnc:*)   guest-vnc -f $fb -p ${source#vnc:} -I "$input" ;;
+        *vnc:*)
+            # not before the guest's own screen is there
+            port=${source##*:} n=0
+            until guest_fb_ready $port; do
+                [ $n = 0 ] && echo "$screen: waiting for the guest screen on VNC port $port"
+                n=1; sleep 1
+            done
+            ;;
+        esac
+        echo "$screen ($fb): $source"
+        # guest-vnc -1 exits when the guest goes away (restart, crash): the
+        # loop then waits for its screen again rather than showing QEMU's
+        # placeholder ("This VM has no graphic display device") meanwhile
+        case "$source" in
+        vnc:*)   guest-vnc -1 -f $fb -p ${source#vnc:} -I "$input" -m $scale ;;
         cluster) cluster-hdmi -f $fb -i $IFACE ;;
         rearcam:vnc:*)
-            rear-camera -f $fb -i $IFACE -- guest-vnc -f $fb -p ${source#rearcam:vnc:} -I "$input" ;;
+            rear-camera -f $fb -i $IFACE ${pause:+-p $pause} -- guest-vnc -1 -f $fb -p ${source#rearcam:vnc:} -I "$input" -m $scale ;;
         rearcam:cluster)
-            rear-camera -f $fb -i $IFACE -- cluster-hdmi -f $fb -i $IFACE ;;
-        rearcam) rear-camera -f $fb -i $IFACE ;;
+            rear-camera -f $fb -i $IFACE ${pause:+-p $pause} -- cluster-hdmi -f $fb -i $IFACE ;;
+        rearcam) rear-camera -f $fb -i $IFACE ${pause:+-p $pause} ;;
         console)
             con2fb $fb 1
             # until the display goes away

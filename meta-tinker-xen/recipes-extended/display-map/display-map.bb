@@ -17,7 +17,8 @@ INITSCRIPT_NAME = "display-map"
 # after xen-guests (90) and vehicle-bench (92)
 INITSCRIPT_PARAMS = "start 93 2 3 4 5 . stop 07 0 1 6 ."
 
-RDEPENDS:${PN} = "guest-vnc cluster-hdmi rear-camera kernel-module-udl"
+# rearcam:* sources need rear-camera installed in dom0 as well
+RDEPENDS:${PN} = "guest-vnc cluster-hdmi kernel-module-udl"
 
 do_compile() {
     ${CC} ${CFLAGS} ${LDFLAGS} -Wall -Wextra -o con2fb ${S}/con2fb.c

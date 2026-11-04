@@ -14,7 +14,17 @@
 #   rearcam:<source>  <source> (vnc:<port> or cluster), replaced by the rear
 #               camera (USB webcam, rear-camera) while the car is in reverse
 #   rearcam     the rear camera alone, black when not in reverse
-SCREENS="hdmi=rearcam:vnc:5900 usb1=vnc:5901 usb2=cluster usb3=console"
+# dom0 uses the UART console and rtos1 its own SPI TFT; media1 gets HDMI.
+# USB adapters can be added, e.g. usb1=cluster usb2=console
+# The rear camera is media1's (it draws the camera on its own screen in
+# reverse), so HDMI simply shows media1.
+SCREENS="hdmi=vnc:5901"
+
+# How a guest screen (vnc:<port>) is put on its monitor: "fill" stretches it
+# over the whole screen, "fit" makes it as large as it goes without changing
+# its shape (black bars), "none" shows it 1:1 in the centre. SCALE_<screen>
+# overrides it for one screen, e.g. SCALE_usb1=fit.
+SCALE=fill
 
 # Input devices (touchscreen, mouse, keyboard) a guest screen forwards to its
 # guest: a glob over /dev/input, or "none". Screens not listed get none.

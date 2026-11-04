@@ -34,4 +34,5 @@ FILES:${PN} = "${sysconfdir}/init.d/xen-guests ${sysconfdir}/default/xen-guests 
     ${sysconfdir}/udev/rules.d/50-tinker-usb-hub.rules"
 FILES:${PN}-watchdog = "${sysconfdir}/init.d/hw-watchdog"
 CONFFILES:${PN} = "${sysconfdir}/default/xen-guests"
-RDEPENDS:${PN} = "xen-tools-xl freertos-xen-guest media-guest"
+# e2fsck: guest disks are checked before each start
+RDEPENDS:${PN} = "xen-tools-xl freertos-xen-guest media-guest e2fsprogs-e2fsck"

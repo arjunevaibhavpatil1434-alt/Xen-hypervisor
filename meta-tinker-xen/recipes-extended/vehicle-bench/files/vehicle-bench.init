@@ -16,6 +16,9 @@ ENABLED=1
 IFACE=vcan0
 BITRATE=500000
 SIM=1
+# 1: the simulated drive cycle backs up once a minute (rear camera comes on);
+# 0: reverse only with "$0 reverse" or frames from a real bus
+SIM_REVERSE=0
 LOG=/var/log/vehicle-bench.log
 [ -r /etc/default/vehicle-bench ] && . /etc/default/vehicle-bench
 
@@ -36,7 +39,7 @@ start)
     ip link set $IFACE up
     echo "Starting vehicle bench on $IFACE ($([ "$SIM" = 1 ] && echo simulated vehicle || echo listen-only))"
     if [ "$SIM" = 1 ]; then
-        vehicle-sim -i $IFACE >>$LOG 2>&1 </dev/null &
+        vehicle-sim -i $IFACE $([ "$SIM_REVERSE" = 1 ] && echo -R) >>$LOG 2>&1 </dev/null &
         echo $! > /var/run/vehicle-sim.pid
     fi
     ( while :; do can2rtos -i $IFACE -d rtos1; sleep 2; done ) >>$LOG 2>&1 </dev/null &

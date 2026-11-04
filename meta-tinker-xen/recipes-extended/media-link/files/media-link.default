@@ -1,0 +1,6 @@
+# dom0 -> media1 link (/etc/init.d/media-link): gear frames for media1's
+# rear camera, chime requests for media1's audio-mixer.
+MEDIA1=192.168.100.4
+IFACE=vcan0
+# Vehicle warnings from the FreeRTOS guest as chimes (vehicle-chimes): 1 or 0
+CHIMES=1

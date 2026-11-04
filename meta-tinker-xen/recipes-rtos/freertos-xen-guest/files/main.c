@@ -15,6 +15,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "tft.h"
 
 /* ---- Xen console ------------------------------------------------------- */
 
@@ -846,6 +847,211 @@ static void vVehicleTask( void * pv )
     }
 }
 
+/* ---- TFT dashboard (ILI9341 on SPI2, passed through by Xen) ------------ */
+
+/*
+ * rtos1's own screen: the SPI TFT on the 40-pin header, driven straight
+ * from this guest (tft.c), so it keeps showing the vehicle state and the
+ * real-time figures even if dom0 or the other guests hang. Lowest
+ * priority with the shell: drawing only uses time the real-time tasks
+ * leave over. Fields are redrawn only when they change.
+ */
+#define DASH_PERIOD_MS      100
+#define DASH_RPM_MAX        8000
+#define DASH_BAR_X          8
+#define DASH_BAR_Y          150
+#define DASH_BAR_W          304
+#define DASH_BAR_H          16
+
+/* v right-aligned in width characters (spaces in front); buf >= width + 1 */
+static void fmt_uint( char * buf, uint32_t v, uint32_t width )
+{
+    uint32_t i = width;
+
+    buf[ width ] = '\0';
+
+    do
+    {
+        buf[ --i ] = ( char ) ( '0' + v % 10 );
+        v /= 10;
+    } while( v != 0 && i > 0 );
+
+    while( i > 0 )
+    {
+        buf[ --i ] = ' ';
+    }
+}
+
+static uint32_t str_copy( char * dst, uint32_t pos, const char * s )
+{
+    while( *s != '\0' )
+    {
+        dst[ pos++ ] = *s++;
+    }
+
+    dst[ pos ] = '\0';
+    return pos;
+}
+
+static int str_same( const char * a, const char * b )
+{
+    while( *a != '\0' && *a == *b )
+    {
+        a++;
+        b++;
+    }
+
+    return *a == *b;
+}
+
+/* draw text only if it differs from what the field shows now */
+static void dash_field( char * shown, const char * now, uint32_t x, uint32_t y,
+                        uint32_t scale, uint16_t fg, uint16_t bg, int force )
+{
+    if( force || !str_same( shown, now ) )
+    {
+        tft_text( x, y, now, scale, fg, bg );
+        ( void ) str_copy( shown, 0, now );
+    }
+}
+
+static void vDisplayTask( void * pv )
+{
+    char speed_s[ 8 ] = "", rpm_s[ 8 ] = "", over_s[ 12 ] = "";
+    char red_s[ 12 ] = "", rt_s[ 32 ] = "", up_s[ 56 ] = "", buf[ 56 ], num[ 12 ];
+    uint32_t bar_shown = 0xffffffffUL, bar_red_shown = 0, last_sig = 0xff, beat = 0;
+    int first = 1;
+
+    ( void ) pv;
+
+    tft_init();
+    rtos_printf( "[tft] ILI9341 320x240 on SPI2 initialised\n" );
+
+    tft_fill( 0, 0, TFT_W, TFT_H, TFT_BLACK );
+    tft_fill( 0, 0, TFT_W, 28, TFT_NAVY );
+    tft_text( 8, 6, "FreeRTOS rtos1", 2, TFT_WHITE, TFT_NAVY );
+    tft_text( 196, 10, "Xen guest, CPU 3", 1, TFT_GREY, TFT_NAVY );
+    tft_text( 236, 84, "km/h", 2, TFT_GREY, TFT_BLACK );
+    tft_text( 8, 124, "RPM", 2, TFT_GREY, TFT_BLACK );
+    tft_fill( DASH_BAR_X, DASH_BAR_Y, DASH_BAR_W, DASH_BAR_H, TFT_DKGREY );
+
+    for( ; ; )
+    {
+        uint32_t have = ulHaveSignal, speed = ulSpeed, rpm = ulRpm;
+        uint32_t s = xTaskGetTickCount() / configTICK_RATE_HZ, pos, bar, red_x;
+        uint16_t val_fg = have ? TFT_WHITE : TFT_GREY;
+        uint32_t sig = !ulSeen ? 0 : have ? 1 : 2;
+
+        /* speed and rpm: grey when the values are stale */
+        if( have )
+        {
+            fmt_uint( buf, speed / 100, 3 );
+        }
+        else
+        {
+            ( void ) str_copy( buf, 0, "---" );
+        }
+
+        dash_field( speed_s, buf, 40, 40, 8, val_fg, TFT_BLACK, first || sig != last_sig );
+
+        if( have )
+        {
+            fmt_uint( buf, rpm, 4 );
+        }
+        else
+        {
+            ( void ) str_copy( buf, 0, "----" );
+        }
+
+        dash_field( rpm_s, buf, 60, 116, 3, val_fg, TFT_BLACK, first || sig != last_sig );
+
+        /* rpm bar, red beyond the redline */
+        bar = ( have ? ( rpm > DASH_RPM_MAX ? DASH_RPM_MAX : rpm ) : 0 ) * DASH_BAR_W / DASH_RPM_MAX;
+        red_x = ( ulRedlineLimit > DASH_RPM_MAX ? DASH_RPM_MAX : ulRedlineLimit ) * DASH_BAR_W / DASH_RPM_MAX;
+
+        if( bar != bar_shown || red_x != bar_red_shown )
+        {
+            uint32_t g = bar < red_x ? bar : red_x;
+
+            tft_fill( DASH_BAR_X, DASH_BAR_Y, g, DASH_BAR_H, TFT_GREEN );
+            if( bar > red_x )
+            {
+                tft_fill( DASH_BAR_X + red_x, DASH_BAR_Y, bar - red_x, DASH_BAR_H, TFT_RED );
+            }
+            tft_fill( DASH_BAR_X + bar, DASH_BAR_Y, DASH_BAR_W - bar, DASH_BAR_H, TFT_DKGREY );
+            tft_fill( DASH_BAR_X + red_x, DASH_BAR_Y + DASH_BAR_H, 2, 4, TFT_RED );  /* redline mark */
+            if( bar_red_shown != red_x && bar_shown != 0xffffffffUL )
+            {
+                tft_fill( DASH_BAR_X + bar_red_shown, DASH_BAR_Y + DASH_BAR_H, 2, 4, TFT_BLACK );
+                tft_fill( DASH_BAR_X + red_x, DASH_BAR_Y + DASH_BAR_H, 2, 4, TFT_RED );
+            }
+            bar_shown = bar;
+            bar_red_shown = red_x;
+        }
+
+        /* CAN signal state */
+        if( sig != last_sig )
+        {
+            static const char * const text[] = { "NO DATA    ", "CAN OK     ", "SIGNAL LOST" };
+            static const uint16_t colour[] = { TFT_YELLOW, TFT_GREEN, TFT_RED };
+
+            tft_text( 8, 180, text[ sig ], 2, colour[ sig ], TFT_BLACK );
+            last_sig = sig;
+        }
+
+        /* alerts, as long as the condition lasts */
+        dash_field( over_s, ( have && speed > ulOverspeedLimit ) ? "OVERSPEED" : "         ",
+                    200, 180, 2, TFT_WHITE, TFT_RED, first );
+        dash_field( red_s, ( have && rpm > ulRedlineLimit ) ? "REDLINE  " : "         ",
+                    200, 202, 2, TFT_WHITE, TFT_RED, first );
+
+        /* real-time task jitter, from the last 10 s report */
+        pos = str_copy( buf, 0, "10ms task " );
+        if( ulReports )
+        {
+            fmt_uint( num, ulLastMinUs, 5 );
+            pos = str_copy( buf, pos, num );
+            pos = str_copy( buf, pos, " -" );
+            fmt_uint( num, ulLastMaxUs, 5 );
+            pos = str_copy( buf, pos, num );
+            ( void ) str_copy( buf, pos, " us" );
+        }
+        else
+        {
+            ( void ) str_copy( buf, pos, "measuring...  " );
+        }
+        dash_field( rt_s, buf, 8, 206, 1, TFT_GREY, TFT_BLACK, first );
+
+        /* uptime and frame counters */
+        pos = str_copy( buf, 0, "up " );
+        fmt_uint( num, s / 3600, 3 );
+        pos = str_copy( buf, pos, num );
+        fmt_uint( num, 100 + s / 60 % 60, 3 );
+        num[ 0 ] = ':';
+        pos = str_copy( buf, pos, num );
+        fmt_uint( num, 100 + s % 60, 3 );
+        num[ 0 ] = ':';
+        pos = str_copy( buf, pos, num );
+        pos = str_copy( buf, pos, "  frames" );
+        fmt_uint( num, ulFramesTotal, 9 );
+        pos = str_copy( buf, pos, num );
+        pos = str_copy( buf, pos, "  lost" );
+        fmt_uint( num, ulLostTotal, 6 );
+        ( void ) str_copy( buf, pos, num );
+        dash_field( up_s, buf, 8, 226, 1, TFT_GREY, TFT_BLACK, first );
+
+        /* heartbeat: blinks once a second while the scheduler runs */
+        if( ( ulHeartbeats & 1 ) != beat || first )
+        {
+            beat = ulHeartbeats & 1;
+            tft_fill( 300, 8, 12, 12, beat ? TFT_GREEN : TFT_NAVY );
+        }
+
+        first = 0;
+        vTaskDelay( pdMS_TO_TICKS( DASH_PERIOD_MS ) );
+    }
+}
+
 /* ---- shell (xl console rtos1) ------------------------------------------ */
 
 /*
@@ -958,7 +1164,7 @@ static void shell_command( char * line )
     else if( str_eq( cmd, "tasks" ) )
     {
         rtos_printf( "tasks: %u (rt10ms 4, heartbeat 3, vehicle 3, producer 2, consumer 2, "
-                     "shell 1, idle 0)\n", ( uint32_t ) uxTaskGetNumberOfTasks() );
+                     "display 1, shell 1, idle 0)\n", ( uint32_t ) uxTaskGetNumberOfTasks() );
         rtos_printf( "heap: %u bytes free, lowest ever %u, of %u\n",
                      ( uint32_t ) xPortGetFreeHeapSize(),
                      ( uint32_t ) xPortGetMinimumEverFreeHeapSize(),
@@ -1097,9 +1303,10 @@ int main( void )
     xTaskCreate( vProducerTask, "producer", configMINIMAL_STACK_SIZE * 2, NULL, 2, NULL );
     xTaskCreate( vConsumerTask, "consumer", configMINIMAL_STACK_SIZE * 2, NULL, 2, NULL );
     xTaskCreate( vVehicleTask, "vehicle", configMINIMAL_STACK_SIZE * 2, NULL, 3, NULL );
+    xTaskCreate( vDisplayTask, "display", configMINIMAL_STACK_SIZE * 2, NULL, 1, NULL );
     xTaskCreate( vShellTask, "shell", configMINIMAL_STACK_SIZE * 2, NULL, 1, NULL );
 
-    rtos_printf( "[rtos] 6 tasks created, starting the scheduler; type help for commands\n" );
+    rtos_printf( "[rtos] 7 tasks created, starting the scheduler; type help for commands\n" );
     vTaskStartScheduler();
 
     rtos_printf( "[rtos] FATAL: scheduler did not start\n" );

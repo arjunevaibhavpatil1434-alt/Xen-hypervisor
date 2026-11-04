@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 /*
- * rear-camera: rear-view camera on a dom0 screen while the car is in reverse.
+ * rear-camera: rear-view camera on a screen while the car is in reverse.
  *
  * Watches the gear frame (0x0C2, byte 0 'R' = reverse) on the vehicle CAN
  * bus (receive only). In reverse it stops the screen's normal viewer
@@ -12,9 +12,26 @@
  * the screen shows colour bars and "NO CAMERA"; a camera plugged in later is
  * picked up.
  *
- *   rear-camera [-f /dev/fb0] [-i vcan0] [-d /dev/video0] [-s 640x480] [-r fps]
- *               [-n] [-T] [-g WxH] [-- viewer [args...]]
+ * With -p host:port, a guest's player is paused while the camera is shown:
+ * rear-camera sends "pause" (camera showing) or "play" over UDP when that
+ * changes and again every second, and "play" when it exits. In media1,
+ * media-ctl stops and resumes ffmpeg, so the video stops where it was and
+ * its sound does not play over the reverse chime.
+ *
+ * In the media1 guest (which owns the camera, a USB device dom0 gives it
+ * with USB/IP) there is no CAN bus: dom0's media-link sends each gear frame
+ * as a raw struct can_frame in a UDP datagram (-u port, from -G address
+ * only). The screen is media1's own, which its video player draws on (-S):
+ * rear-camera leaves it alone until reverse, pauses the player (-p) and
+ * draws the camera; afterwards the player draws again.
+ *
+ *   rear-camera [-f /dev/fb0] [-i vcan0 | -u port [-G addr]] [-d /dev/video0]
+ *               [-s 640x480] [-r fps] [-n] [-T] [-S] [-g WxH] [-p host:port]
+ *               [-- viewer [args...]]
  *   -n: do not mirror the picture; -T: camera view always on (test, no CAN)
+ *   -p: pause/resume a guest's player (media-ctl) with the camera view
+ *   -u: gear frames from UDP (media-link) instead of CAN; -G: their sender
+ *   -S: the screen is shared with a player (-p): not cleared at start
  *   -g WxH: draw into memory instead of a framebuffer (tests)
  *   SIGUSR1 switches the camera view on or off by hand.
  *
@@ -29,7 +46,9 @@
 #include <linux/fb.h>
 #include <linux/kd.h>
 #include <linux/videodev2.h>
+#include <arpa/inet.h>
 #include <net/if.h>
+#include <netinet/in.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdint.h>
@@ -50,6 +69,7 @@
 #define GEAR_TIMEOUT_S	1.0		/* no gear frame for this long: not in reverse */
 #define CHIME_FIFO	"/run/audio-mixer/chime"
 #define MAX_BUFS	4
+#define PAUSE_REPEAT_S	1.0		/* pause/play state sent again this often */
 
 /* ---- framebuffer ------------------------------------------------------- */
 
@@ -58,6 +78,35 @@ static struct fb_var_screeninfo var;
 static struct fb_fix_screeninfo fix;
 static int W, H, tty_fd = -1;
 static pid_t viewer = -1;
+
+/* ---- guest player pause (-p host:port) ---------------------------------- */
+
+static int pause_sock = -1;
+static struct sockaddr_in pause_addr;
+
+static int pause_open(const char *spec)
+{
+	char host[64];
+	int port;
+
+	if (sscanf(spec, "%63[^:]:%d", host, &port) != 2 || port <= 0 || port > 65535 ||
+	    inet_pton(AF_INET, host, &pause_addr.sin_addr) != 1)
+		return -1;
+	pause_addr.sin_family = AF_INET;
+	pause_addr.sin_port = htons(port);
+	pause_sock = socket(AF_INET, SOCK_DGRAM, 0);
+	return pause_sock < 0 ? -1 : 0;
+}
+
+/* "pause" or "play"; async-signal-safe (used from on_signal) */
+static void pause_send(int paused)
+{
+	const char *m = paused ? "pause\n" : "play\n";
+
+	if (pause_sock >= 0)
+		sendto(pause_sock, m, strlen(m), MSG_DONTWAIT,
+		       (struct sockaddr *)&pause_addr, sizeof(pause_addr));
+}
 
 static void restore_console(void)
 {
@@ -87,6 +136,7 @@ static void on_signal(int sig)
 		kill(viewer, SIGTERM);
 		kill(viewer, SIGCONT);
 	}
+	pause_send(0);
 	restore_console();
 	_exit(0);
 }
@@ -408,10 +458,15 @@ int main(int argc, char **argv)
 	struct sockaddr_can addr = { .can_family = AF_CAN };
 	struct can_filter flt = { .can_id = ID_GEAR, .can_mask = CAN_SFF_MASK };
 	struct timespec last_gear = { 0 }, last_want = { 0 }, last_try = { 0 }, last_draw = { 0 };
+	struct timespec last_pause = { 0 };
+	const char *pause_spec = NULL;
+	struct in_addr gear_from;
+	int udp_port = 0, shared = 0;
 	int fd = -1, s, opt, want_w = 640, want_h = 480, fps = 15, test = 0, gw = 0, gh = 0;
 	int reverse = 0, showing = 0, nocam_drawn = 0;
 
-	while ((opt = getopt(argc, argv, "f:i:d:s:r:nTg:")) != -1) {
+	inet_aton("192.168.100.1", &gear_from);
+	while ((opt = getopt(argc, argv, "f:i:d:s:r:nTg:p:u:G:S")) != -1) {
 		switch (opt) {
 		case 'f': fbdev = optarg; break;
 		case 'i': ifname = optarg; break;
@@ -421,13 +476,21 @@ int main(int argc, char **argv)
 		case 'n': mirror = 0; break;
 		case 'T': test = 1; break;
 		case 'g': if (sscanf(optarg, "%dx%d", &gw, &gh) != 2) return 2; break;
+		case 'p': pause_spec = optarg; break;
+		case 'u': udp_port = atoi(optarg); break;
+		case 'G': if (!inet_aton(optarg, &gear_from)) return 2; break;
+		case 'S': shared = 1; break;
 		default:
 			fprintf(stderr, "usage: %s [-f fbdev] [-i iface] [-d video dev] [-s WxH] [-r fps] "
-				"[-n] [-T] [-g WxH] [-- viewer args...]\n", argv[0]);
+				"[-n] [-T] [-S] [-g WxH] [-p host:port] [-u port [-G addr]] [-- viewer args...]\n", argv[0]);
 			return 2;
 		}
 	}
 	setvbuf(stdout, NULL, _IOLBF, 0);
+	if (pause_spec && pause_open(pause_spec)) {
+		fprintf(stderr, "rear-camera: -p %s: want ipv4-address:port\n", pause_spec);
+		return 2;
+	}
 
 	if (gw > 0 && gh > 0) {
 		/* memory "framebuffer", XRGB8888 */
@@ -478,7 +541,7 @@ int main(int argc, char **argv)
 			perror(argv[optind]);
 			_exit(127);
 		}
-	} else if (fd >= 0) {
+	} else if (fd >= 0 && !shared) {
 		/* a screen of its own: keep the text console off it */
 		ioctl(fd, FBIOBLANK, FB_BLANK_UNBLANK);
 		if (console_on(fd)) {
@@ -489,18 +552,37 @@ int main(int argc, char **argv)
 		fill(0, 0, W, H, c_black);
 	}
 
-	s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-	addr.can_ifindex = if_nametoindex(ifname);
-	if (s < 0 || !addr.can_ifindex ||
-	    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, &flt, sizeof(flt)) ||
-	    bind(s, (struct sockaddr *)&addr, sizeof(addr))) {
-		fprintf(stderr, "rear-camera: %s: %s (no gear data)\n", ifname, strerror(errno));
-		if (s >= 0)
-			close(s);
-		s = -1;
+	if (udp_port > 0) {
+		/* gear frames from dom0's media-link */
+		struct sockaddr_in ua = { .sin_family = AF_INET, .sin_port = htons(udp_port),
+					  .sin_addr.s_addr = htonl(INADDR_ANY) };
+		static char name[48];
+
+		s = socket(AF_INET, SOCK_DGRAM, 0);
+		if (s < 0 || bind(s, (struct sockaddr *)&ua, sizeof(ua))) {
+			fprintf(stderr, "rear-camera: UDP port %d: %s (no gear data)\n", udp_port,
+				strerror(errno));
+			if (s >= 0)
+				close(s);
+			s = -1;
+		}
+		snprintf(name, sizeof(name), "UDP %d from %s", udp_port, inet_ntoa(gear_from));
+		ifname = name;
+	} else {
+		s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+		addr.can_ifindex = if_nametoindex(ifname);
+		if (s < 0 || !addr.can_ifindex ||
+		    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, &flt, sizeof(flt)) ||
+		    bind(s, (struct sockaddr *)&addr, sizeof(addr))) {
+			fprintf(stderr, "rear-camera: %s: %s (no gear data)\n", ifname, strerror(errno));
+			if (s >= 0)
+				close(s);
+			s = -1;
+		}
 	}
-	printf("rear-camera: %s %dx%d, CAN %s (receive only), camera %s%s%s\n", fbdev, W, H, ifname,
-	       dev, test ? ", always on (test)" : "", viewer > 0 ? ", viewer started" : "");
+	printf("rear-camera: %s %dx%d, gear %s (receive only), camera %s%s%s%s%s\n", fbdev, W, H,
+	       ifname, dev, test ? ", always on (test)" : "", viewer > 0 ? ", viewer started" : "",
+	       pause_spec ? ", pauses player at " : "", pause_spec ? pause_spec : "");
 
 	for (;;) {
 		struct pollfd p[2] = { { .fd = s, .events = POLLIN }, { .fd = cam, .events = POLLIN } };
@@ -509,7 +591,15 @@ int main(int argc, char **argv)
 
 		poll(p, 2, 100);	/* negative fds are skipped */
 
-		while (s >= 0 && recv(s, &f, sizeof(f), MSG_DONTWAIT) == sizeof(f))
+		for (;;) {
+			struct sockaddr_in from;
+			socklen_t fl = sizeof(from);
+
+			if (s < 0 || recvfrom(s, &f, sizeof(f), MSG_DONTWAIT, (struct sockaddr *)&from,
+					      &fl) != sizeof(f))
+				break;
+			if (udp_port > 0 && from.sin_addr.s_addr != gear_from.s_addr)
+				continue;
 			if (f.can_id == ID_GEAR && f.can_dlc >= 1) {
 				int r = f.data[0] == 'R';
 
@@ -518,6 +608,7 @@ int main(int argc, char **argv)
 				reverse = r;
 				clock_gettime(CLOCK_MONOTONIC, &last_gear);
 			}
+		}
 		if (reverse && since(&last_gear) > GEAR_TIMEOUT_S) {
 			printf("rear-camera: no gear frames, leaving reverse\n");
 			reverse = 0;
@@ -531,6 +622,12 @@ int main(int argc, char **argv)
 			if (viewer > 0) {
 				kill(viewer, SIGSTOP);
 				check_viewer(1);	/* until it has stopped drawing */
+			}
+			pause_send(1);
+			clock_gettime(CLOCK_MONOTONIC, &last_pause);
+			if (pause_sock >= 0) {
+				printf("rear-camera: player paused\n");
+				usleep(50000);	/* its last frame is drawn before ours */
 			}
 			fill(0, 0, W, H, c_black);
 			showing = 1;
@@ -546,6 +643,15 @@ int main(int argc, char **argv)
 			showing = 0;
 			if (viewer > 0)
 				kill(viewer, SIGCONT);	/* it draws its screen again */
+			pause_send(0);
+			clock_gettime(CLOCK_MONOTONIC, &last_pause);
+			if (pause_sock >= 0)
+				printf("rear-camera: player resumed\n");
+		}
+		/* repeat the state: a lost datagram or a restarted guest catches up */
+		if (pause_sock >= 0 && since(&last_pause) >= PAUSE_REPEAT_S) {
+			pause_send(showing);
+			clock_gettime(CLOCK_MONOTONIC, &last_pause);
 		}
 		if (!showing)
 			continue;

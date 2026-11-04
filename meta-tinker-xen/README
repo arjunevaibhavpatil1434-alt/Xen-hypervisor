@@ -55,7 +55,8 @@ SD card layout (tinker-xen.wks)
 Using it (console: picocom -b 115200 /dev/ttyUSB0, pins 32 TX / 33 RX / 34 GND)
 =========
 
-  Power on, wait: U-Boot -> boot.scr -> Xen -> dom0 login "root" (no password).
+  Power on, wait: U-Boot -> boot.scr -> Xen -> dom0 root shell with no
+  login prompt (tinker-autologin, also on media1 and tty1).
   The guests start by themselves (/etc/init.d/xen-guests).
 
   xl list                         Domain-0, rtos1, media1

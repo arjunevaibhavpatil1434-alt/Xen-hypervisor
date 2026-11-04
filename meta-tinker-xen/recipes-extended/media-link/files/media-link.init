@@ -1,0 +1,52 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          media-link
+# Required-Start:    xenbr0
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Gear frames and chime requests to media1
+### END INIT INFO
+#
+# media1 owns the rear camera and the speaker. media-link sends it the gear
+# frames (CAN 0x0C2, UDP 5603) and the chime requests (UDP 5604);
+# vehicle-chimes turns rtos1's warnings into chime requests.
+# Settings: /etc/default/media-link. Test: "media-link -s warn".
+
+ENABLED=1
+MEDIA1=192.168.100.4
+IFACE=vcan0
+CHIMES=1
+PIDDIR=/var/run/media-link
+LOG=/var/log/media-link.log
+[ -r /etc/default/media-link ] && . /etc/default/media-link
+
+case "$1" in
+start)
+    [ "$ENABLED" = 1 ] || exit 0
+    echo "Starting media-link to $MEDIA1"
+    mkdir -p $PIDDIR
+    ( while :; do media-link -i $IFACE -H $MEDIA1; sleep 2; done ) >>$LOG 2>&1 </dev/null &
+    echo $! > $PIDDIR/media-link.pid
+    if [ "$CHIMES" = 1 ]; then
+        ( while :; do vehicle-chimes; sleep 2; done ) >>$LOG 2>&1 </dev/null &
+        echo $! > $PIDDIR/vehicle-chimes.pid
+    fi
+    ;;
+stop)
+    for p in $PIDDIR/*.pid; do
+        [ -f "$p" ] && kill "$(cat $p)" 2>/dev/null
+        rm -f "$p"
+    done
+    killall vehicle-chimes 2>/dev/null
+    # not "killall media-link": this script has that name too
+    for p in $(pidof media-link); do [ "$p" = $$ ] || kill $p; done
+    ;;
+restart)
+    $0 stop; $0 start
+    ;;
+*)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
+exit 0

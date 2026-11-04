@@ -1,0 +1,122 @@
+=== Tinker Board RK3288: Yocto + Xen ===
+Project: /home/arjune/xen-hypervisor
+Target:  tinker-xen-test-image
+
+### Shell environment set up for builds. ###
+
+You can now run 'bitbake <target>'
+
+Common targets are:
+    core-image-minimal
+    core-image-full-cmdline
+    core-image-sato
+    core-image-weston
+    meta-toolchain
+    meta-ide-support
+
+You can also run generated qemu images with a command like 'runqemu qemux86'
+
+Other commonly useful commands are:
+ - 'devtool' and 'recipetool' handle common recipe tasks
+ - 'bitbake-layers' handles common layer tasks
+ - 'oe-pkgdata-util' handles common target package tasks
+Configured machine: tinker-board
+Building tinker-xen-test-image ...
+Loading cache...done.
+Loaded 4107 entries from dependency cache.
+NOTE: Resolving any missing task queue dependencies
+
+Build Configuration:
+BB_VERSION           = "2.0.0"
+BUILD_SYS            = "x86_64-linux"
+NATIVELSBSTRING      = "universal"
+TARGET_SYS           = "arm-poky-linux-gnueabi"
+MACHINE              = "tinker-board"
+DISTRO               = "poky"
+DISTRO_VERSION       = "4.0.35"
+TUNE_FEATURES        = "arm vfp cortexa17 neon thumb callconvention-hard"
+TARGET_FPU           = "hard"
+meta                 
+meta-poky            
+meta-yocto-bsp       = "kirkstone:445a6223929b9a7a62b575093659e3d9e1aba982"
+meta-oe              = "kirkstone:ce8539c941f6fcbecaca4d16640ac105c0595589"
+meta-arm-toolchain   
+meta-arm             = "kirkstone:c3e9fb12aa31d25e33d8392c4a233ed1275a3278"
+meta-rockchip        = "kirkstone:1e27f83cc4105739ff354d92bce82c20fae77da1"
+meta-filesystems     
+meta-python          
+meta-networking      = "kirkstone:ce8539c941f6fcbecaca4d16640ac105c0595589"
+meta-virtualization  = "kirkstone:92b6abcdfb6f12c4931247f0f29aaf5331984525"
+meta-tinker-xen      = "main:5986a0e69a45635b6fbd84a0667847b5f14cdb27"
+
+Initialising tasks...done.
+Sstate summary: Wanted 710 Local 700 Mirrors 0 Missed 10 Current 1127 (98% match, 99% complete)
+NOTE: Executing Tasks
+NOTE: Running task 3420 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/guest-vnc/guest-vnc.bb:do_packagedata)
+NOTE: Running task 3514 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/display-map/display-map.bb:do_packagedata)
+NOTE: recipe guest-vnc-1.0-r0: task do_packagedata: Started
+NOTE: recipe display-map-1.0-r0: task do_packagedata: Started
+NOTE: recipe guest-vnc-1.0-r0: task do_packagedata: Succeeded
+NOTE: recipe display-map-1.0-r0: task do_packagedata: Succeeded
+NOTE: Running task 4250 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/display-map/display-map.bb:do_package_write_rpm)
+NOTE: Running task 4251 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/guest-vnc/guest-vnc.bb:do_package_write_rpm)
+NOTE: Running task 4377 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/display-map/display-map.bb:do_package_qa)
+NOTE: Running task 4378 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/guest-vnc/guest-vnc.bb:do_package_qa)
+NOTE: Running task 4405 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_rootfs)
+NOTE: recipe display-map-1.0-r0: task do_package_write_rpm: Started
+NOTE: recipe guest-vnc-1.0-r0: task do_package_write_rpm: Started
+NOTE: recipe display-map-1.0-r0: task do_package_qa: Started
+NOTE: recipe guest-vnc-1.0-r0: task do_package_qa: Started
+NOTE: recipe display-map-1.0-r0: task do_package_qa: Succeeded
+NOTE: recipe guest-vnc-1.0-r0: task do_package_qa: Succeeded
+NOTE: recipe media-guest-image-1.0-r0: task do_rootfs: Started
+NOTE: recipe guest-vnc-1.0-r0: task do_package_write_rpm: Succeeded
+NOTE: recipe display-map-1.0-r0: task do_package_write_rpm: Succeeded
+NOTE: Running task 4461 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_rootfs)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_rootfs: Started
+NOTE: recipe media-guest-image-1.0-r0: task do_rootfs: Succeeded
+NOTE: Running task 4462 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_flush_pseudodb)
+NOTE: recipe media-guest-image-1.0-r0: task do_flush_pseudodb: Started
+NOTE: recipe media-guest-image-1.0-r0: task do_flush_pseudodb: Succeeded
+NOTE: Running task 4463 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_image_qa)
+NOTE: recipe media-guest-image-1.0-r0: task do_image_qa: Started
+NOTE: recipe media-guest-image-1.0-r0: task do_image_qa: Succeeded
+NOTE: Running task 4464 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_image)
+NOTE: recipe media-guest-image-1.0-r0: task do_image: Started
+NOTE: recipe media-guest-image-1.0-r0: task do_image: Succeeded
+NOTE: Running task 4465 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_image_ext4)
+NOTE: recipe media-guest-image-1.0-r0: task do_image_ext4: Started
+NOTE: recipe media-guest-image-1.0-r0: task do_image_ext4: Succeeded
+NOTE: Running task 4466 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_image_complete)
+NOTE: recipe media-guest-image-1.0-r0: task do_image_complete: Started
+NOTE: recipe media-guest-image-1.0-r0: task do_image_complete: Succeeded
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_rootfs: Succeeded
+NOTE: Running task 4467 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_flush_pseudodb)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_flush_pseudodb: Started
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_flush_pseudodb: Succeeded
+NOTE: Running task 4468 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_image_qa)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_image_qa: Started
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_image_qa: Succeeded
+NOTE: Running task 4469 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_image)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_image: Started
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_image: Succeeded
+NOTE: Running task 4470 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_rootfs_wicenv)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_rootfs_wicenv: Started
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_rootfs_wicenv: Succeeded
+NOTE: Running task 4471 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_image_wic)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_image_wic: Started
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_image_wic: Succeeded
+NOTE: Running task 4472 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_image_complete)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_image_complete: Started
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_image_complete: Succeeded
+NOTE: Running task 4473 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_populate_lic_deploy)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_populate_lic_deploy: Started
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_populate_lic_deploy: Succeeded
+NOTE: Running noexec task 4474 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_build)
+NOTE: Tasks Summary: Attempted 4474 tasks of which 4453 didn't need to be rerun and all succeeded.
+Build completed. Checking deployment artifacts:
+/home/arjune/xen-hypervisor/build/tmp/deploy/images/tinker-board/tinker-xen-test-image-tinker-board-20261103081624.rootfs.wic.bmap
+/home/arjune/xen-hypervisor/build/tmp/deploy/images/tinker-board/xen-tinker-board
+/home/arjune/xen-hypervisor/build/tmp/deploy/images/tinker-board/xen-boot.scr
+/home/arjune/xen-hypervisor/build/tmp/deploy/images/tinker-board/rk3288-tinker--5.15.201+git0+b75d71b7f2_b5ccd2e275-r0-tinker-board-20261103080656.dtb
+/home/arjune/xen-hypervisor/build/tmp/deploy/images/tinker-board/tinker-xen-test-image-tinker-board-20261103081624.rootfs.wic

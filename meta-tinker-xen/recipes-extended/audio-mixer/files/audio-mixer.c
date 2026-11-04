@@ -1,26 +1,28 @@
 // SPDX-License-Identifier: MIT
 /*
- * audio-mixer: dom0's audio pipeline. Every sound of the system goes through
- * here into the board's one speaker output (the 3.5 mm jack of the onboard
- * USB audio codec, ALSA), 48 kHz stereo:
+ * audio-mixer: media1's audio pipeline. Every sound of the system goes
+ * through here into the board's one speaker output (the 3.5 mm jack of the
+ * onboard USB audio codec, which dom0 gives media1 with USB/IP), 48 kHz
+ * stereo:
  *
  *   chimes   vehicle warnings and the reverse beep, made here. Highest
- *            priority: the guests' sound is turned down while one plays.
- *   media    media1's video sound: S16LE stereo 48 kHz in UDP datagrams
- *            (its ffmpeg sends them, paced by -re).
+ *            priority: the video sound is turned down while one plays.
+ *   media    the video sound: S16LE stereo 48 kHz in UDP datagrams (media1's
+ *            ffmpeg sends them to 127.0.0.1).
  *
- * The network sources listen on dom0's xenbr0 address only and take data
- * only from their guest's address. A source is buffered 60 ms before it
- * plays (network jitter) and played with linear resampling to 48 kHz.
- * Without a sound card the mixer keeps running (and keeps the guests paced),
- * and tries the card again every 2 s.
+ * The media source listens on listen-addr only and takes data only from
+ * media-addr. A source is buffered 60 ms before it plays (jitter) and played
+ * with linear resampling to 48 kHz. Without a sound card the mixer keeps
+ * running (and keeps the player paced), and tries the card again every 2 s.
  *
- *   audio-mixer [-D alsa-device] [-a listen-addr] [-m port] [-M media1-addr]
- *               [-g media%%] [-v]
+ *   audio-mixer [-D alsa-device] [-a listen-addr] [-m port] [-M media-addr]
+ *               [-C chime-port] [-R chime-peer] [-g media%%] [-v]
  *   audio-mixer -c warn|reverse|info   ask the running mixer for a chime
  *
- * Chime requests are names, one per line, in the FIFO /run/audio-mixer/chime;
- * "audio-mixer -c" writes one without blocking when the mixer is not running.
+ * Chime requests are names, one per line, in the FIFO /run/audio-mixer/chime
+ * (rear-camera, "audio-mixer -c"), or in UDP datagrams to chime-port (all
+ * addresses) from chime-peer only: dom0's media-link sends the vehicle
+ * warnings that way.
  */
 
 #define _GNU_SOURCE	/* accept4 */
@@ -76,6 +78,25 @@ static struct source *sources[] = { &media };
 #define NSOURCES (sizeof(sources) / sizeof(sources[0]))
 
 static struct in_addr listen_addr;
+
+/* chime requests over UDP (-C): from chime_peer only */
+static struct in_addr chime_peer;
+static int chime_port;
+
+static int chime_udp_open(void)
+{
+	struct sockaddr_in a = { .sin_family = AF_INET, .sin_port = htons(chime_port),
+				 .sin_addr.s_addr = htonl(INADDR_ANY) };
+	int fd = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
+
+	if (fd < 0 || bind(fd, (struct sockaddr *)&a, sizeof(a))) {
+		if (fd >= 0)
+			close(fd);
+		return -1;
+	}
+	printf("audio-mixer: chimes: UDP port %d, from %s\n", chime_port, inet_ntoa(chime_peer));
+	return fd;
+}
 
 static int source_open(struct source *s)
 {
@@ -350,6 +371,26 @@ static int chime_client(const char *name)
 	return 0;
 }
 
+/* chime names in UDP datagrams, one or more per datagram, one per line */
+static void chime_udp_read(int fd)
+{
+	char buf[256];
+	struct sockaddr_in from;
+	socklen_t fl = sizeof(from);
+	ssize_t n;
+
+	while ((n = recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *)&from, &fl)) > 0) {
+		char *save, *name;
+
+		fl = sizeof(from);
+		if (from.sin_addr.s_addr != chime_peer.s_addr)
+			continue;
+		buf[n] = '\0';
+		for (name = strtok_r(buf, "\r\n", &save); name; name = strtok_r(NULL, "\r\n", &save))
+			chime_request(name);
+	}
+}
+
 /* ---- main -------------------------------------------------------------- */
 
 /* alsa-lib's own messages: the retries every 2 s would fill the log */
@@ -392,23 +433,26 @@ int main(int argc, char **argv)
 	static int16_t out[PERIOD * 2];
 	snd_pcm_t *pcm = NULL;
 	float duck = 1.0f;
-	int opt, chime_fd, gm = 100, ga = 100, warned = 0;
+	int opt, chime_fd, chime_udp = -1, gm = 100, ga = 100, warned = 0;
 	unsigned int i;
 
-	inet_aton("192.168.100.1", &listen_addr);
-	inet_aton("192.168.100.4", &media.peer);
-	while ((opt = getopt(argc, argv, "D:a:m:M:g:c:v")) != -1) {
+	inet_aton("127.0.0.1", &listen_addr);
+	inet_aton("127.0.0.1", &media.peer);
+	inet_aton("192.168.100.1", &chime_peer);
+	while ((opt = getopt(argc, argv, "D:a:m:M:C:R:g:c:v")) != -1) {
 		switch (opt) {
 		case 'D': dev = optarg; break;
 		case 'a': if (!inet_aton(optarg, &listen_addr)) return 2; break;
 		case 'm': media.port = atoi(optarg); break;
 		case 'M': if (!inet_aton(optarg, &media.peer)) return 2; break;
+		case 'C': chime_port = atoi(optarg); break;
+		case 'R': if (!inet_aton(optarg, &chime_peer)) return 2; break;
 		case 'g': if (sscanf(optarg, "%d", &gm) != 1) return 2; break;
 		case 'c': return chime_client(optarg);
 		case 'v': verbose = 1; break;
 		default:
 			fprintf(stderr, "usage: %s [-D alsa-device] [-a listen-addr] [-m port] "
-                        "[-M media1-addr] [-g media%%] [-v]\n"
+                        "[-M media-addr] [-C chime-port] [-R chime-peer] [-g media%%] [-v]\n"
                         "       %s -c warn|reverse|info\n", argv[0], argv[0]);
 			return 2;
 		}
@@ -424,8 +468,8 @@ int main(int argc, char **argv)
 	clock_gettime(CLOCK_MONOTONIC, &next);
 
 	for (;;) {
-		struct pollfd p[1 + 2 * NSOURCES];
-		int np = 1;
+		struct pollfd p[2 + 2 * NSOURCES];
+		int np = 2;
 
 		/* sockets and sound card: (again) every 2 s until they open,
 		 * e.g. before xenbr0 has its address */
@@ -435,6 +479,10 @@ int main(int argc, char **argv)
 					fprintf(stderr, "audio-mixer: %s: cannot listen on %s:%u: %s\n",
 						sources[i]->name, inet_ntoa(listen_addr),
 						sources[i]->port, strerror(errno));
+			if (chime_port > 0 && chime_udp < 0 &&
+			    (chime_udp = chime_udp_open()) < 0 && !warned)
+				fprintf(stderr, "audio-mixer: chimes: cannot listen on UDP port %d: %s\n",
+					chime_port, strerror(errno));
 			if (!pcm)
 				pcm = pcm_open(dev, warned);
 			warned = 1;
@@ -443,6 +491,7 @@ int main(int argc, char **argv)
 
 		/* inputs: take whatever has arrived, without waiting */
 		p[0] = (struct pollfd){ .fd = chime_fd, .events = POLLIN };
+		p[1] = (struct pollfd){ .fd = chime_udp, .events = POLLIN };
 		for (i = 0; i < NSOURCES; i++) {
 			p[np++] = (struct pollfd){ .fd = sources[i]->fd, .events = POLLIN };
 			p[np++] = (struct pollfd){ .fd = conn_wanted(sources[i]) ? sources[i]->conn : -1,
@@ -451,9 +500,11 @@ int main(int argc, char **argv)
 		poll(p, np, 0);
 		if (p[0].revents & POLLIN)
 			chime_read(chime_fd);
+		if (p[1].revents & POLLIN)
+			chime_udp_read(chime_udp);
 		for (i = 0; i < NSOURCES; i++)
 			if (sources[i]->fd >= 0)
-				source_read(sources[i], p[1 + 2 * i].revents, p[2 + 2 * i].revents);
+				source_read(sources[i], p[2 + 2 * i].revents, p[3 + 2 * i].revents);
 
 		/* one period: chimes over the guests, which are turned down
 		 * while a chime plays */

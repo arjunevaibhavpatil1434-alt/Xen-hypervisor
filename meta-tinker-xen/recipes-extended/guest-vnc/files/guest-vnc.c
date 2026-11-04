@@ -5,15 +5,20 @@
  *
  * QEMU (Xen's device model in dom0) serves the guest's framebuffer and
  * keyboard/pointer as a VNC server (guest config: vnc=1, vnclisten=127.0.0.1).
- * This is a minimal VNC client: raw encoding into /dev/fb0, centred, and
- * dom0 evdev input sent back as VNC pointer and key events.
+ * This is a minimal VNC client: raw encoding into /dev/fb0, scaled to the
+ * monitor, and dom0 evdev input sent back as VNC pointer and key events.
  *
  *   guest-vnc [-H host] [-p port] [-f /dev/fb0] [-I input-glob | -I none]
+ *             [-m fill|fit|none]
  *   guest-vnc [-H host] [-p port] -t X,Y   (one tap at guest X,Y, then exit)
  *
  * -I picks the input devices forwarded to the guest (default all of
  * /dev/input/event*); with one screen per guest (display-map) each viewer
  * gets its own, or none.
+ * -m: how the guest screen is put on the monitor: "fill" stretches it over
+ * the whole screen (default), "fit" scales it as large as it goes without
+ * changing its shape (black bars), "none" shows it 1:1 in the centre.
+ * Scaling is nearest-neighbour: each guest pixel becomes a block.
  */
 
 #include <errno.h>
@@ -50,8 +55,11 @@ static struct fb_var_screeninfo var;
 static struct fb_fix_screeninfo fix;
 static unsigned int fb_w, fb_h, bpp;	/* bpp in bytes */
 
-/* guest screen size and where it sits on the monitor */
-static unsigned int g_w, g_h, off_x, off_y;
+/* guest screen size; where (off) and how large (d) it is on the monitor */
+static unsigned int g_w, g_h, off_x, off_y, d_w, d_h;
+static enum { SCALE_FILL, SCALE_FIT, SCALE_NONE } scale_mode = SCALE_FILL;
+/* monitor column (relative to off_x) -> guest column */
+static uint16_t xmap[8192];
 
 static void restore_console(void)
 {
@@ -142,13 +150,47 @@ static void fb_clear(void)
 
 static void set_guest_size(unsigned int w, unsigned int h)
 {
-	g_w = w;
-	g_h = h;
-	off_x = fb_w > w ? (fb_w - w) / 2 : 0;
-	off_y = fb_h > h ? (fb_h - h) / 2 : 0;
+	unsigned int x;
+
+	g_w = w ? w : 1;
+	g_h = h ? h : 1;
+	if (scale_mode == SCALE_FILL) {
+		d_w = fb_w;
+		d_h = fb_h;
+	} else if (scale_mode == SCALE_FIT) {
+		if ((unsigned long long)fb_w * g_h > (unsigned long long)fb_h * g_w) {
+			d_h = fb_h;
+			d_w = (unsigned long long)g_w * fb_h / g_h;
+		} else {
+			d_w = fb_w;
+			d_h = (unsigned long long)g_h * fb_w / g_w;
+		}
+	} else {
+		d_w = g_w;
+		d_h = g_h;
+	}
+	if (d_w > sizeof(xmap) / sizeof(xmap[0]))	/* never on real monitors */
+		d_w = sizeof(xmap) / sizeof(xmap[0]);
+	off_x = fb_w > d_w ? (fb_w - d_w) / 2 : 0;
+	off_y = fb_h > d_h ? (fb_h - d_h) / 2 : 0;
+	for (x = 0; x < d_w; x++)
+		xmap[x] = (unsigned long long)x * g_w / d_w;
 	fb_clear();
-	printf("guest-vnc: guest %ux%u on %ux%u monitor at +%u+%u\n",
-	       w, h, fb_w, fb_h, off_x, off_y);
+	printf("guest-vnc: guest %ux%u shown %ux%u on %ux%u monitor at +%u+%u\n",
+	       g_w, g_h, d_w, d_h, fb_w, fb_h, off_x, off_y);
+}
+
+/* guest <-> monitor coordinates (monitor ones relative to the whole screen) */
+static int to_screen_x(int gx) { return (int)off_x + (int)((long long)gx * d_w / g_w); }
+static int to_screen_y(int gy) { return (int)off_y + (int)((long long)gy * d_h / g_h); }
+static int to_guest_x(int sx) { return d_w ? (int)((long long)(sx - (int)off_x) * g_w / d_w) : 0; }
+static int to_guest_y(int sy) { return d_h ? (int)((long long)(sy - (int)off_y) * g_h / d_h) : 0; }
+
+/* first monitor row/column (relative to off) that shows guest row/column v
+ * of a guest size g scaled to d: rows first_dst(r) .. first_dst(r + 1) - 1 */
+static unsigned int first_dst(unsigned int v, unsigned int g, unsigned int d)
+{
+	return ((unsigned long long)v * d + g - 1) / g;
 }
 
 /* ---- mouse cursor (drawn by us, the guest has none) --------------------- */
@@ -158,7 +200,7 @@ static uint8_t cur_save[(2 * CURSOR + 1) * (2 * CURSOR + 1) * 4];
 
 static int cur_cell(int dx, int dy, unsigned int *x, unsigned int *y)
 {
-	int px = (int)off_x + cur_x + dx, py = (int)off_y + cur_y + dy;
+	int px = to_screen_x(cur_x) + dx, py = to_screen_y(cur_y) + dy;
 
 	if (px < 0 || py < 0 || px >= (int)fb_w || py >= (int)fb_h)
 		return 0;
@@ -323,17 +365,51 @@ static int read_rect_raw(unsigned int x, unsigned int y, unsigned int w, unsigne
 {
 	static uint8_t row[8192 * 4];
 	size_t len = (size_t)w * bpp;
-	unsigned int r, cw;
+	unsigned int r, cw, dx0, dx1, dy, dy0, dy1, i;
+	uint8_t *dst;
 
-	if (len > sizeof(row))
+	if (len > sizeof(row) || x + w > g_w || y + h > g_h)
 		return -1;
+	/* monitor columns of this rectangle, clipped to the monitor */
+	dx0 = first_dst(x, g_w, d_w);
+	dx1 = first_dst(x + w, g_w, d_w);
+	if (dx1 > d_w)
+		dx1 = d_w;
+	if (off_x + dx1 > fb_w)
+		dx1 = off_x < fb_w ? fb_w - off_x : 0;
+	cw = dx1 > dx0 ? dx1 - dx0 : 0;
+
 	for (r = 0; r < h; r++) {
 		if (read_full(row, len))
 			return -1;
-		if (off_y + y + r >= fb_h || off_x + x >= fb_w)
+		dy0 = first_dst(y + r, g_h, d_h);
+		dy1 = first_dst(y + r + 1, g_h, d_h);
+		if (dy1 > d_h)
+			dy1 = d_h;
+		if (!cw || dy0 >= dy1 || off_y + dy0 >= fb_h)
 			continue;
-		cw = off_x + x + w > fb_w ? fb_w - off_x - x : w;
-		memcpy(fb_pixel(off_x + x, off_y + y + r), row, (size_t)cw * bpp);
+		if (off_y + dy1 > fb_h)
+			dy1 = fb_h - off_y;
+
+		/* the first monitor row of this guest row, then copies of it */
+		dst = fb_pixel(off_x + dx0, off_y + dy0);
+		if (d_w == g_w) {
+			memcpy(dst, row, (size_t)cw * bpp);
+		} else if (bpp == 4) {
+			const uint32_t *src = (const uint32_t *)row;
+			uint32_t *d32 = (uint32_t *)dst;
+
+			for (i = 0; i < cw; i++)
+				d32[i] = src[xmap[dx0 + i] - x];
+		} else {
+			const uint16_t *src = (const uint16_t *)row;
+			uint16_t *d16 = (uint16_t *)dst;
+
+			for (i = 0; i < cw; i++)
+				d16[i] = src[xmap[dx0 + i] - x];
+		}
+		for (dy = dy0 + 1; dy < dy1; dy++)
+			memcpy(fb_pixel(off_x + dx0, off_y + dy), dst, (size_t)cw * bpp);
 	}
 	return 0;
 }
@@ -522,7 +598,7 @@ static void handle_event(struct input *in, const struct input_event *ev)
 		   (ev->code == BTN_TOUCH || ev->code == BTN_LEFT)) {
 		in->touch = ev->value != 0;
 	} else if (ev->type == EV_SYN && ev->code == SYN_REPORT && in->abs) {
-		send_pointer(in->touch, in->x - (int)off_x, in->y - (int)off_y);
+		send_pointer(in->touch, to_guest_x(in->x), to_guest_y(in->y));
 	} else if (ev->type == EV_REL) {
 		if (ev->code == REL_X || ev->code == REL_Y) {
 			int *c = ev->code == REL_X ? &cur_x : &cur_y;
@@ -556,21 +632,43 @@ static void handle_event(struct input *in, const struct input_event *ev)
 
 /* ---- main -------------------------------------------------------------- */
 
+/*
+ * -1: exit when the connection to the guest is lost instead of reconnecting.
+ * When the guest restarts, QEMU serves a 640x480 placeholder ("This VM has
+ * no graphic display device") until the guest kernel connects its PV
+ * framebuffer; reconnecting here would put that text on the monitor. With
+ * -1 the supervisor (display-map) waits for the guest screen before it runs
+ * guest-vnc again.
+ */
+static int once;
+
 int main(int argc, char **argv)
 {
 	const char *host = "127.0.0.1", *fbdev = "/dev/fb0", *tap = NULL;
 	int port = 5900, opt;
 	time_t last_scan = 0;
 
-	while ((opt = getopt(argc, argv, "H:p:f:t:I:")) != -1) {
+	while ((opt = getopt(argc, argv, "1H:p:f:t:I:m:")) != -1) {
 		switch (opt) {
+		case '1': once = 1; break;
 		case 'H': host = optarg; break;
 		case 'p': port = atoi(optarg); break;
 		case 'f': fbdev = optarg; break;
 		case 't': tap = optarg; break;
 		case 'I': input_glob = optarg; break;
+		case 'm':
+			if (!strcmp(optarg, "fill"))
+				scale_mode = SCALE_FILL;
+			else if (!strcmp(optarg, "fit"))
+				scale_mode = SCALE_FIT;
+			else if (!strcmp(optarg, "none"))
+				scale_mode = SCALE_NONE;
+			else
+				goto usage;
+			break;
 		default:
-			fprintf(stderr, "usage: %s [-H host] [-p port] [-f fbdev] [-I input-glob|none] [-t X,Y]\n", argv[0]);
+		usage:
+			fprintf(stderr, "usage: %s [-H host] [-p port] [-f fbdev] [-I input-glob|none] [-m fill|fit|none] [-t X,Y] [-1]\n", argv[0]);
 			return 2;
 		}
 	}
@@ -653,10 +751,14 @@ int main(int argc, char **argv)
 		}
 		continue;
 lost:
-		printf("guest-vnc: connection lost, retrying\n");
 		close(sock);
 		sock = -1;
 		fb_clear();
+		if (once) {
+			printf("guest-vnc: connection lost, exiting (-1)\n");
+			return 1;
+		}
+		printf("guest-vnc: connection lost, retrying\n");
 		sleep(2);
 	}
 }

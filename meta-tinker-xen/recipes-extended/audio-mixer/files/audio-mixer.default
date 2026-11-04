@@ -1,14 +1,22 @@
-# dom0's audio pipeline (/etc/init.d/audio-mixer): every sound goes through
-# audio-mixer to the board's speaker output (3.5 mm jack, onboard USB codec).
+# media1's audio pipeline (/etc/init.d/audio-mixer): every sound goes through
+# audio-mixer to the board's speaker output (3.5 mm jack of the onboard USB
+# codec, attached from dom0 with USB/IP by usb-attach).
 #
 # ALSA output device ("aplay -L" lists them). The onboard codec by name
 # (card "Audio"): its card number changes when another USB sound device,
-# e.g. a webcam's microphone, is plugged in. Its device 0 runs at 8 kHz
+# e.g. a webcam's microphone, is attached. Its device 0 runs at 8 kHz
 # only; device 1 takes 44.1-192 kHz.
 DEVICE=plughw:CARD=Audio,DEV=1
-# Media guest sound level in percent
+# Video sound level in percent (mixed in audio-mixer)
 GAIN=100
-# Vehicle warnings from the FreeRTOS guest as chimes (vehicle-chimes): 1 or 0
-CHIMES=1
+# Codec output volume in percent, set (and unmuted) whenever the card
+# appears: over USB/IP media1 must not rely on the codec's power-on state.
+# CONTROL is the codec's playback control for DEVICE (amixer -c Audio scontrols)
+VOLUME=100
+CONTROL="PCM,1"
+# Chime requests from dom0 (media-link: the FreeRTOS vehicle warnings):
+# UDP port, and dom0's address on xenbr0
+CHIME_PORT=5604
+DOM0=192.168.100.1
 # More audio-mixer options, e.g. -v (log when a source starts and stops)
 OPTS=""

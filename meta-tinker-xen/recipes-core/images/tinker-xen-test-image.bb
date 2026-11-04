@@ -30,12 +30,11 @@ do_image_wic[depends] += "xen:do_deploy xen-boot-script:do_deploy \
 # framebuffers and touch over local VNC; display-map shows each OS on a
 # screen of its own (HDMI with the Rockchip DRM modules, USB display
 # adapters with udl): guest VNC displays through the framebuffer viewer with dom0's
-# touchscreen/mouse/keyboard, the instrument cluster and dom0's console;
-# ALSA with the onboard USB audio codec for dom0.
-# Rear camera: a USB webcam (uvcvideo) shown by rear-camera in place of the
-# cluster while the car is in reverse (display-map). Audio pipeline:
-# audio-mixer plays the vehicle chimes (highest priority), media1's video
-# sound, sent over xenbr0, on the speaker output.
+# touchscreen/mouse/keyboard, the instrument cluster and dom0's console.
+# Rear camera and sound belong to media1: usb-share exports the USB webcam
+# and the onboard USB audio codec to it with USB/IP (the RK3288's USB
+# controllers have no IOMMU, so Xen cannot pass them through), media-link
+# sends it the gear frames (CAN) and chime requests (FreeRTOS warnings).
 # Automotive bench (vehicle-bench): CAN (virtual bus, USB adapters,
 # can-utils), a simulated vehicle, the read-only CAN -> FreeRTOS gateway and
 # an instrument-cluster dashboard (cluster-hdmi); ignition-watch for a
@@ -52,8 +51,7 @@ IMAGE_INSTALL:append = " \
     xen-guests xen-guests-watchdog \
     qemu guest-vnc display-map \
     kernel-module-rockchipdrm kernel-module-dw-hdmi kernel-module-vfb kernel-module-udl \
-    kernel-module-snd-usb-audio alsa-utils-aplay alsa-utils-amixer alsa-utils-speakertest \
-    audio-mixer rear-camera kernel-module-uvcvideo \
+    usb-share media-link \
     vehicle-bench can-utils cluster-hdmi ignition-watch \
     xen-consoles \
     kernel-module-vcan kernel-module-gs-usb kernel-module-peak-usb kernel-module-slcan \
@@ -61,6 +59,9 @@ IMAGE_INSTALL:append = " \
 
 # SSH into dom0 (dropbear) over eth0, key logins only (TINKER_SSH_KEY)
 inherit tinker-ssh
+
+# No login prompts: every console logs root in by itself
+inherit tinker-autologin
 
 # Free space on dom0's root filesystem (32 MB): the guest kernels and
 # ramdisk are already in the image, and /var/log is in RAM

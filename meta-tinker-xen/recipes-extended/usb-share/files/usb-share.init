@@ -1,0 +1,71 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          usb-share
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Export the camera and sound codec to media1 (USB/IP)
+### END INIT INFO
+#
+# Runs usbipd (TCP 3240) and binds every USB device with an interface of a
+# class in CLASSES (or listed in IDS) to usbip-host, so media1 can attach it.
+# Checked every 2 s, so a camera plugged in later is exported too.
+# Settings: /etc/default/usb-share. "usbip list -l" shows the devices.
+
+ENABLED=1
+CLASSES="0e 01"
+IDS=""
+PIDFILE=/var/run/usb-share.pid
+LOG=/var/log/usb-share.log
+[ -r /etc/default/usb-share ] && . /etc/default/usb-share
+
+# is this USB device (/sys/bus/usb/devices/<busid>) one to export?
+wanted() {
+    d=$1
+    id="$(cat $d/idVendor 2>/dev/null):$(cat $d/idProduct 2>/dev/null)"
+    for i in $IDS; do [ "$i" = "$id" ] && return 0; done
+    for c in $(cat $d/*:*/bInterfaceClass 2>/dev/null); do
+        for w in $CLASSES; do [ "$c" = "$w" ] && return 0; done
+    done
+    return 1
+}
+
+share_loop() {
+    while :; do
+        for d in /sys/bus/usb/devices/[0-9]*-*; do
+            case "${d##*/}" in *:*) continue ;; esac
+            [ -e "$d/idVendor" ] || continue
+            [ "$(readlink $d/driver 2>/dev/null | sed 's,.*/,,')" = usbip-host ] && continue
+            wanted $d || continue
+            echo "usb-share: exporting ${d##*/} ($(cat $d/idVendor):$(cat $d/idProduct) $(cat $d/product 2>/dev/null))"
+            usbip bind -b ${d##*/}
+        done
+        sleep 2
+    done
+}
+
+case "$1" in
+start)
+    [ "$ENABLED" = 1 ] || exit 0
+    echo "Starting usb-share (USB/IP, classes $CLASSES)"
+    modprobe usbip-host
+    usbipd -D
+    share_loop >>$LOG 2>&1 </dev/null &
+    echo $! > $PIDFILE
+    ;;
+stop)
+    [ -f $PIDFILE ] && kill "$(cat $PIDFILE)" 2>/dev/null
+    rm -f $PIDFILE
+    killall usbipd 2>/dev/null
+    for d in /sys/bus/usb/drivers/usbip-host/[0-9]*-*; do
+        [ -e "$d" ] && usbip unbind -b ${d##*/}
+    done
+    ;;
+restart)
+    $0 stop; $0 start
+    ;;
+*)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac
+exit 0

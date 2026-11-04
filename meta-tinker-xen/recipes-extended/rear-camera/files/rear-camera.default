@@ -1,0 +1,12 @@
+# media1's rear camera (/etc/init.d/rear-camera)
+# Screen: media1's own (PV framebuffer, shown on HDMI by dom0)
+FBDEV=/dev/fb0
+# Camera (USB, attached from dom0 by usb-attach)
+CAMERA=/dev/video0
+# Gear frames from dom0's media-link: UDP port and dom0's address
+GEAR_PORT=5603
+DOM0=192.168.100.1
+# The video player to pause while the camera is shown (media-ctl)
+PAUSE=127.0.0.1:5602
+# More options, e.g. -n (do not mirror) or -s 1280x720
+OPTS=""

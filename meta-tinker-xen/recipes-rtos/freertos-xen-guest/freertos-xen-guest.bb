@@ -15,6 +15,9 @@ SRC_URI = " \
     file://guest.ld \
     file://startup.S \
     file://main.c \
+    file://tft.c \
+    file://tft.h \
+    file://rtos1-hwprep.c \
     file://FreeRTOSConfig.h \
     file://rtos1.cfg \
     file://rtos1-start \
@@ -31,6 +34,8 @@ do_compile() {
         CC="${HOST_PREFIX}gcc ${TOOLCHAIN_OPTIONS}" \
         OBJCOPY="${HOST_PREFIX}objcopy" \
         KERNEL=${S}/FreeRTOS-Kernel
+    # dom0 helper (Linux userspace): SPI TFT clocks and pin mux for rtos1
+    ${CC} ${CFLAGS} ${LDFLAGS} -Wall -Wextra -o ${B}/rtos1-hwprep ${S}/rtos1-hwprep.c
 }
 
 do_install() {
@@ -38,6 +43,7 @@ do_install() {
     install -m 0644 ${S}/rtos1.cfg ${D}${sysconfdir}/xen/rtos1.cfg
     install -m 0644 ${B}/freertos-xen-guest.bin ${D}${localstatedir}/lib/xen/rtos1/
     install -m 0755 ${S}/rtos1-start ${D}${sbindir}/rtos1-start
+    install -m 0755 ${B}/rtos1-hwprep ${D}${sbindir}/rtos1-hwprep
 }
 
 do_deploy() {
@@ -45,4 +51,4 @@ do_deploy() {
 }
 addtask deploy after do_compile before do_build
 
-FILES:${PN} = "${sysconfdir}/xen/rtos1.cfg ${localstatedir}/lib/xen/rtos1 ${sbindir}/rtos1-start"
+FILES:${PN} = "${sysconfdir}/xen/rtos1.cfg ${localstatedir}/lib/xen/rtos1 ${sbindir}/rtos1-start ${sbindir}/rtos1-hwprep"

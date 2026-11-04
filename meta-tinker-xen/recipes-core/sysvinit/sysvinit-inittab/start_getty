@@ -19,8 +19,13 @@ if [ "$2" != "hvc0" ] && grep -qs xen /sys/hypervisor/type; then
     exit 0
 fi
 
+# No login prompt: images with tinker-autologin log root in by themselves
+if [ -x /sbin/autologin ]; then
+    autologin="-n -l /sbin/autologin"
+fi
+
 if [ -e /sys/class/tty/$2 -a -c /dev/$2 ]; then
-	${setsid:-} ${getty} -L $1 $2 $3
+	${setsid:-} ${getty} ${autologin:-} -L $1 $2 $3
 else
     # Prevent respawning to fast error if /dev entry does not exist
     sleep 1000

@@ -3,7 +3,8 @@
  * vehicle-sim: a test vehicle on a CAN bus, for the automotive bench setup.
  *
  * Sends a repeating drive cycle (accelerate through the gears to 135 km/h,
- * cruise, brake to a stop, back up a few metres, park) as three CAN frames
+ * cruise, brake to a stop, park; with -R it also backs up a few metres
+ * before parking) as three CAN frames
  * every 10 ms:
  *   0x0C0  speed  uint16 big endian, 0.01 km/h
  *   0x0C1  engine uint16 big endian, rpm
@@ -11,7 +12,7 @@
  * Only for a virtual bus (vcan0) or an isolated bench bus: never connect it
  * to a real vehicle.
  *
- *   vehicle-sim [-i vcan0] [-p period_ms]
+ *   vehicle-sim [-i vcan0] [-p period_ms] [-R]
  *   SIGUSR1 pauses/resumes sending (to test signal-loss detection).
  *   SIGUSR2 holds reverse at walking pace (or releases it), to test the
  *   rear camera.
@@ -34,6 +35,7 @@
 #define ID_GEAR		0x0C2
 
 static volatile sig_atomic_t paused, hold_reverse;
+static int cycle_reverse;	/* -R: drive cycle includes a reverse phase */
 
 static void on_usr1(int sig)
 {
@@ -61,6 +63,10 @@ static double profile(double t, char *sel)
 	if (t < 52.0)
 		return 0.0;				/* stand still */
 	if (t < 58.0) {
+		if (!cycle_reverse) {
+			*sel = 'P';			/* no -R: park instead */
+			return 0.0;
+		}
 		*sel = 'R';				/* back up at up to 4 km/h */
 		return t < 55.0 ? 4.0 * (t - 52.0) / 3.0 : 4.0 * (58.0 - t) / 3.0;
 	}
@@ -113,12 +119,13 @@ int main(int argc, char **argv)
 	struct timespec next, start;
 	int period_ms = 10, opt, s;
 
-	while ((opt = getopt(argc, argv, "i:p:")) != -1) {
+	while ((opt = getopt(argc, argv, "i:p:R")) != -1) {
 		switch (opt) {
 		case 'i': ifname = optarg; break;
 		case 'p': period_ms = atoi(optarg); break;
+		case 'R': cycle_reverse = 1; break;
 		default:
-			fprintf(stderr, "usage: %s [-i iface] [-p period_ms]\n", argv[0]);
+			fprintf(stderr, "usage: %s [-i iface] [-p period_ms] [-R]\n", argv[0]);
 			return 2;
 		}
 	}

@@ -10,23 +10,136 @@
 # rtos1 (FreeRTOS) is started with rtos1-start, which first moves CPU 3 into
 # its own RTDS cpupool; any other name is started with xl create
 # /etc/xen/<name>.cfg. Disable with XEN_GUESTS="" in /etc/default/xen-guests.
+# Before a guest starts, the ext2/3/4 partitions it gets (phy: disks in its
+# config) are checked with e2fsck and repaired if needed: after a power cut
+# a guest's journal can be left with bad checksums, and its kernel then
+# cannot mount its root filesystem at all ("JBD2: recovery failed").
+#
+# A guest with READY_<name> set (/etc/default/xen-guests) is then watched in
+# the background: if that text does not appear in its console log within
+# READY_TIMEOUT seconds (and, with READY_PING_<name>, that address does not
+# answer), or its start shows a broken program ("unknown action field",
+# "Segmentation fault", "terminated by signal", "EXT4-fs error", init
+# "couldn't execute", "Kernel panic"), it is destroyed and created
+# again, up to READY_RETRIES times. media1 needs this: on cold boots programs
+# it loads in its first seconds can be corrupt (init misreads its inittab,
+# ifup or udevd crash), so it plays nothing or has no network, while a second
+# start works.
 
 XEN_GUESTS="rtos1 media1"
 SHUTDOWN_TIMEOUT=30
+READY_media1="root@media1|media1 login:"
+READY_PING_media1=192.168.100.4
+READY_TIMEOUT=45
+READY_RETRIES=3
+WATCHDIR=/var/run/xen-guests
+LOG=/var/log/xen-guests.log
 [ -r /etc/default/xen-guests ] && . /etc/default/xen-guests
 
 running() { xl domid "$1" >/dev/null 2>&1; }
+
+# check (and repair) a guest's phy: disks; it must not be running
+fsck_disks() {
+    cfg="/etc/xen/$1.cfg"
+    [ -r "$cfg" ] || return 0
+    for dev in $(sed -n "s/.*phy:\([^,']*\).*/\1/p" "$cfg"); do
+        [ -b "$dev" ] || continue
+        # -p: replays the journal and fixes what is safe without asking
+        e2fsck -p "$dev" >/dev/null 2>&1
+        rc=$?
+        if [ $rc -ge 4 ]; then
+            echo "  $1: $dev has errors (e2fsck -p: $rc), repairing"
+            e2fsck -fy "$dev"
+        elif [ $rc -ne 0 ]; then
+            echo "  $1: $dev repaired (e2fsck -p: $rc)"
+        fi
+    done
+}
+
+conlog() { echo /var/log/xen/console/guest-$1.log; }
+logsize() { [ -f "$1" ] && wc -c < "$1" || echo 0; }
+
+# Wait until guest $1 has really started: READY_<name> (an extended regex)
+# appears in its console log after byte $2 and READY_PING_<name> (if set)
+# answers. 1 = broken or too slow; the reason is printed.
+ready_wait() {
+    eval want=\${READY_$1:-} ping=\${READY_PING_$1:-}
+    log=$(conlog "$1") n=0 seen=0
+    while [ $n -lt "$READY_TIMEOUT" ]; do
+        running "$1" || { echo "$(date): $1 is not running"; return 1; }
+        new=$(tail -c +$(($2 + 1)) "$log" 2>/dev/null)
+        bad=$(echo "$new" | grep -m1 -E "unknown action field|Segmentation fault|terminated by signal|EXT4-fs error|couldn.t execute|Kernel panic")
+        [ -n "$bad" ] && { echo "$(date): $1 start broken: $bad"; return 1; }
+        [ $seen = 0 ] && echo "$new" | grep -qE "$want" && seen=1
+        if [ $seen = 1 ]; then
+            [ -z "$ping" ] && return 0
+            ping -c1 -W1 "$ping" >/dev/null 2>&1 && return 0
+        fi
+        sleep 2; n=$((n + 2))
+    done
+    if [ $seen = 0 ]; then
+        echo "$(date): $1 did not reach \"$want\" in ${READY_TIMEOUT}s"
+    else
+        echo "$(date): $1 does not answer at $ping"
+    fi
+    return 1
+}
+
+# Background watcher for a guest with READY_<name>: restart it until it
+# starts properly (or READY_RETRIES restarts have failed)
+watch_guest() {
+    name=$1 off=$2 try=0
+    while :; do
+        if ready_wait "$name" "$off"; then
+            if [ $try -gt 0 ]; then
+                echo "$(date): $name started properly after $try restart(s)"
+            else
+                echo "$(date): $name started properly"
+            fi
+            break
+        fi
+        [ -f $WATCHDIR/$name.stop ] && break
+        if [ $try -ge "$READY_RETRIES" ]; then
+            echo "$(date): $name still not started properly after $try restarts, giving up"
+            break
+        fi
+        try=$((try + 1))
+        echo "$(date): $name did not start properly, restarting it ($try/$READY_RETRIES)"
+        xl destroy "$name" 2>/dev/null
+        sleep 2
+        fsck_disks "$name"
+        off=$(logsize "$(conlog "$name")")
+        xl create "/etc/xen/$name.cfg" >/dev/null 2>&1
+    done
+    rm -f $WATCHDIR/$name.pid
+}
 
 start_guest() {
     running "$1" && return 0
     echo "Starting Xen guest $1"
     case "$1" in
     rtos1) rtos1-start >/dev/null ;;
-    *)     xl create "/etc/xen/$1.cfg" >/dev/null ;;
+    *)
+        fsck_disks "$1"
+        off=$(logsize "$(conlog "$1")")
+        xl create "/etc/xen/$1.cfg" >/dev/null || return 1
+        eval want=\${READY_$1:-}
+        if [ -n "$want" ]; then
+            mkdir -p $WATCHDIR; rm -f $WATCHDIR/$1.stop
+            watch_guest "$1" "$off" >>$LOG 2>&1 </dev/null &
+            echo $! > $WATCHDIR/$1.pid
+        fi
+        ;;
     esac
 }
 
 stop_guest() {
+    # a watcher must not start the guest again while it is being stopped
+    if [ -f $WATCHDIR/$1.pid ]; then
+        touch $WATCHDIR/$1.stop
+        kill "$(cat $WATCHDIR/$1.pid)" 2>/dev/null
+        rm -f $WATCHDIR/$1.pid
+    fi
     running "$1" || return 0
     echo "Stopping Xen guest $1"
     case "$1" in

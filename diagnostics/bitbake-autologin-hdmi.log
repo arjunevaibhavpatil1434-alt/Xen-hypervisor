@@ -1,0 +1,199 @@
+=== Tinker Board RK3288: Yocto + Xen ===
+Project: /home/arjune/xen-hypervisor
+Target:  tinker-xen-test-image
+
+### Shell environment set up for builds. ###
+
+You can now run 'bitbake <target>'
+
+Common targets are:
+    core-image-minimal
+    core-image-full-cmdline
+    core-image-sato
+    core-image-weston
+    meta-toolchain
+    meta-ide-support
+
+You can also run generated qemu images with a command like 'runqemu qemux86'
+
+Other commonly useful commands are:
+ - 'devtool' and 'recipetool' handle common recipe tasks
+ - 'bitbake-layers' handles common layer tasks
+ - 'oe-pkgdata-util' handles common target package tasks
+Configured machine: tinker-board
+Building tinker-xen-test-image ...
+Loading cache...done.
+Loaded 4107 entries from dependency cache.
+NOTE: Resolving any missing task queue dependencies
+
+Build Configuration:
+BB_VERSION           = "2.0.0"
+BUILD_SYS            = "x86_64-linux"
+NATIVELSBSTRING      = "universal"
+TARGET_SYS           = "arm-poky-linux-gnueabi"
+MACHINE              = "tinker-board"
+DISTRO               = "poky"
+DISTRO_VERSION       = "4.0.35"
+TUNE_FEATURES        = "arm vfp cortexa17 neon thumb callconvention-hard"
+TARGET_FPU           = "hard"
+meta                 
+meta-poky            
+meta-yocto-bsp       = "kirkstone:445a6223929b9a7a62b575093659e3d9e1aba982"
+meta-oe              = "kirkstone:ce8539c941f6fcbecaca4d16640ac105c0595589"
+meta-arm-toolchain   
+meta-arm             = "kirkstone:c3e9fb12aa31d25e33d8392c4a233ed1275a3278"
+meta-rockchip        = "kirkstone:1e27f83cc4105739ff354d92bce82c20fae77da1"
+meta-filesystems     
+meta-python          
+meta-networking      = "kirkstone:ce8539c941f6fcbecaca4d16640ac105c0595589"
+meta-virtualization  = "kirkstone:92b6abcdfb6f12c4931247f0f29aaf5331984525"
+meta-tinker-xen      = "main:5986a0e69a45635b6fbd84a0667847b5f14cdb27"
+
+Initialising tasks...done.
+Sstate summary: Wanted 723 Local 700 Mirrors 0 Missed 23 Current 1114 (96% match, 98% complete)
+Removing 3 stale sstate objects for arch allarch...done.
+Removing 9 stale sstate objects for arch tinker_board...done.
+NOTE: Executing Tasks
+NOTE: Running task 2177 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_compile)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_compile: Started
+NOTE: Running task 2608 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_fetch)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_fetch: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_fetch: Succeeded
+NOTE: Running task 2747 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_unpack)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_unpack: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_unpack: Succeeded
+NOTE: Running task 2916 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_patch)
+NOTE: Running task 2999 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_fetch)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_patch: Started
+NOTE: Running task 3062 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_prepare_recipe_sysroot)
+NOTE: recipe media-player-1.0-r0: task do_fetch: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_patch: Succeeded
+NOTE: Running task 3102 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_deploy_source_date_epoch)
+NOTE: recipe media-player-1.0-r0: task do_fetch: Succeeded
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_prepare_recipe_sysroot: Started
+NOTE: Running task 3179 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_unpack)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_prepare_recipe_sysroot: Succeeded
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_deploy_source_date_epoch: Started
+NOTE: recipe media-player-1.0-r0: task do_unpack: Started
+NOTE: recipe media-player-1.0-r0: task do_unpack: Succeeded
+NOTE: Running task 3341 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_patch)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_deploy_source_date_epoch: Succeeded
+NOTE: recipe media-player-1.0-r0: task do_patch: Started
+NOTE: recipe media-player-1.0-r0: task do_patch: Succeeded
+NOTE: Running task 3374 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_configure)
+NOTE: Running task 3441 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_deploy_source_date_epoch)
+NOTE: Running task 3450 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_prepare_recipe_sysroot)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_configure: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_configure: Succeeded
+NOTE: Running task 3534 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_compile)
+NOTE: recipe media-player-1.0-r0: task do_deploy_source_date_epoch: Started
+NOTE: recipe media-player-1.0-r0: task do_prepare_recipe_sysroot: Started
+NOTE: recipe media-player-1.0-r0: task do_prepare_recipe_sysroot: Succeeded
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_compile: Started
+NOTE: recipe media-player-1.0-r0: task do_deploy_source_date_epoch: Succeeded
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_compile: Succeeded
+NOTE: Running task 3707 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_install)
+NOTE: Running task 3708 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_configure)
+NOTE: recipe media-player-1.0-r0: task do_configure: Started
+NOTE: recipe media-player-1.0-r0: task do_configure: Succeeded
+NOTE: Running task 3909 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_populate_lic)
+NOTE: Running task 3916 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_compile)
+NOTE: recipe media-player-1.0-r0: task do_compile: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_populate_lic: Started
+NOTE: recipe media-player-1.0-r0: task do_compile: Succeeded
+NOTE: Running task 4147 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_install)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_install: Started
+NOTE: Running task 4349 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_populate_lic)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_populate_lic: Succeeded
+NOTE: recipe media-player-1.0-r0: task do_install: Started
+NOTE: recipe media-player-1.0-r0: task do_populate_lic: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_install: Succeeded
+NOTE: Running task 4378 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_package)
+NOTE: recipe media-player-1.0-r0: task do_populate_lic: Succeeded
+NOTE: recipe media-player-1.0-r0: task do_install: Succeeded
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_package: Started
+NOTE: Running task 4412 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_package)
+NOTE: recipe media-player-1.0-r0: task do_package: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_package: Succeeded
+NOTE: Running task 4413 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_packagedata)
+NOTE: recipe media-player-1.0-r0: task do_package: Succeeded
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_packagedata: Started
+NOTE: Running task 4414 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_packagedata)
+NOTE: recipe media-player-1.0-r0: task do_packagedata: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_packagedata: Succeeded
+NOTE: Running task 4415 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_package_write_rpm)
+NOTE: Running task 4416 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-core/sysvinit/sysvinit-inittab_2.88dsf.bb:do_package_qa)
+NOTE: recipe media-player-1.0-r0: task do_packagedata: Succeeded
+NOTE: Running task 4419 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_package_write_rpm)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_package_qa: Started
+NOTE: Running task 4420 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-extended/media-player/media-player.bb:do_package_qa)
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_package_write_rpm: Started
+NOTE: recipe media-player-1.0-r0: task do_package_qa: Started
+NOTE: recipe media-player-1.0-r0: task do_package_write_rpm: Started
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_package_qa: Succeeded
+NOTE: recipe media-player-1.0-r0: task do_package_qa: Succeeded
+NOTE: recipe sysvinit-inittab-2.88dsf-r10: task do_package_write_rpm: Succeeded
+NOTE: recipe media-player-1.0-r0: task do_package_write_rpm: Succeeded
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_compile: Succeeded
+NOTE: Running task 4421 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_shared_workdir)
+NOTE: Running task 4422 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_kernel_link_images)
+NOTE: Running task 4423 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_transform_kernel)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_shared_workdir: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_kernel_link_images: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_transform_kernel: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_kernel_link_images: Succeeded
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_transform_kernel: Succeeded
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_shared_workdir: Succeeded
+NOTE: Running task 4424 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_compile_kernelmodules)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_compile_kernelmodules: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_compile_kernelmodules: Succeeded
+NOTE: Running task 4425 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_strip)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_strip: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_strip: Succeeded
+NOTE: Running task 4426 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_sizecheck)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_sizecheck: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_sizecheck: Succeeded
+NOTE: Running task 4427 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_install)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_install: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_install: Succeeded
+NOTE: Running task 4428 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_package)
+NOTE: Running task 4429 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_populate_sysroot)
+NOTE: Running task 4430 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_bundle_initramfs)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_populate_sysroot: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_bundle_initramfs: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_package: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_bundle_initramfs: Succeeded
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_populate_sysroot: Succeeded
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_package: Succeeded
+NOTE: Running task 4432 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_packagedata)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_packagedata: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_packagedata: Succeeded
+NOTE: Running task 4433 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_package_write_rpm)
+NOTE: Running task 4440 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_package_qa)
+NOTE: Running task 4459 of 4474 (/home/arjune/xen-hypervisor/poky/meta/recipes-kernel/linux/linux-yocto_5.15.bb:do_deploy)
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_deploy: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_package_write_rpm: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_package_qa: Started
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_deploy: Succeeded
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_package_write_rpm: Succeeded
+NOTE: recipe linux-yocto-5.15.201+gitAUTOINC+b75d71b7f2_b5ccd2e275-r0: task do_package_qa: Succeeded
+NOTE: Running task 4460 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_rootfs)
+NOTE: Running task 4461 of 4474 (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_rootfs)
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_rootfs: Started
+NOTE: recipe media-guest-image-1.0-r0: task do_rootfs: Started
+ERROR: media-guest-image-1.0-r0 do_rootfs: tinker-autologin: a getty in /bin/start_getty still asks for a login
+ERROR: media-guest-image-1.0-r0 do_rootfs: ExecutionError('/home/arjune/xen-hypervisor/build/tmp/work/tinker_board-poky-linux-gnueabi/media-guest-image/1.0-r0/temp/run.tinker_autologin.101572', 1, None, None)
+ERROR: Logfile of failure stored in: /home/arjune/xen-hypervisor/build/tmp/work/tinker_board-poky-linux-gnueabi/media-guest-image/1.0-r0/temp/log.do_rootfs.101572
+NOTE: recipe media-guest-image-1.0-r0: task do_rootfs: Failed
+ERROR: Task (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_rootfs) failed with exit code '1'
+ERROR: tinker-xen-test-image-1.0-r0 do_rootfs: tinker-autologin: a getty in /bin/start_getty still asks for a login
+ERROR: tinker-xen-test-image-1.0-r0 do_rootfs: ExecutionError('/home/arjune/xen-hypervisor/build/tmp/work/tinker_board-poky-linux-gnueabi/tinker-xen-test-image/1.0-r0/temp/run.tinker_autologin.101568', 1, None, None)
+ERROR: Logfile of failure stored in: /home/arjune/xen-hypervisor/build/tmp/work/tinker_board-poky-linux-gnueabi/tinker-xen-test-image/1.0-r0/temp/log.do_rootfs.101568
+NOTE: recipe tinker-xen-test-image-1.0-r0: task do_rootfs: Failed
+ERROR: Task (/home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_rootfs) failed with exit code '1'
+NOTE: Tasks Summary: Attempted 4461 tasks of which 4418 didn't need to be rerun and 2 failed.
+
+Summary: 2 tasks failed:
+  /home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/media-guest-image.bb:do_rootfs
+  /home/arjune/xen-hypervisor/meta-tinker-xen/recipes-core/images/tinker-xen-test-image.bb:do_rootfs
+Summary: There were 4 ERROR messages, returning a non-zero exit code.
