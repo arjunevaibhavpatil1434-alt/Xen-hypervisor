@@ -6,7 +6,7 @@ Yocto (kirkstone) layer that turns an ASUS Tinker Board R2.0 (Rockchip RK3288,
 
   CPU 0-2  Pool-0, credit2   Domain-0  Yocto Linux 5.15 (control OS)
                              media1    Linux media guest (shared dom0 kernel)
-  CPU 3    pool "rt", RTDS   rtos1     FreeRTOS 11.1 (200 us every 1 ms)
+  CPU 3    pool "rt", RTDS   rtos1     FreeRTOS 11.1 (1000 us every 1 ms: the whole CPU)
 
 Everything boots from one SD card. U-Boot starts Xen by itself, dom0 starts
 the guests, a hardware watchdog resets the board if the system hangs.
@@ -25,7 +25,9 @@ Dependencies
   meta-arm             kirkstone
   meta-rockchip        kirkstone (MACHINE = "tinker-board")
 
-local.conf needs DISTRO_FEATURES:append = " virtualization xen".
+local.conf needs DISTRO_FEATURES:append = " virtualization xen" and
+LICENSE_FLAGS_ACCEPTED += "commercial" (ffmpeg in media1); TINKER_SSH_KEY is the
+public key allowed to log in over SSH (dom0 and media1, keys only).
 
 
 Build and flash
@@ -49,7 +51,8 @@ SD card layout (tinker-xen.wks)
   p4 loader2         U-Boot with NONSEC/HYP and PSCI (0001, 0002 patches)
   p6 boot     (FAT)  xen, zImage, rk3288-tinker.dtb, boot.scr = xen-boot.scr,
                      native/extlinux.conf
-  p7 root     (ext4) dom0 root filesystem
+  p7 root     (ext4) dom0 root filesystem (also rtos1's binary)
+  p8 media-root (ext4) media1 root filesystem (xvda of media1)
 
 
 Using it (console: picocom -b 115200 /dev/ttyUSB0, pins 32 TX / 33 RX / 34 GND)
@@ -117,8 +120,21 @@ Ignition (ignition-watch), disabled by default:
   5 V, so a car install also needs a power-hold/timer relay that cuts the
   supply a minute after ACC off.
 
-Sound (dom0): the onboard USB audio codec is ALSA card 0.
-    speaker-test -c 2 -t sine     aplay file.wav     amixer -c 0
+Rear camera and sound (media1): the RK3288's USB controllers have no IOMMU,
+so dom0 lends the USB webcam and the onboard audio codec to media1 with
+USB/IP (usb-share in dom0, usb-attach in media1). media-link sends media1
+the gear frames (CAN 0x0C2, UDP 5603) and chime requests (UDP 5604, from
+vehicle-chimes: FreeRTOS warnings). In media1, rear-camera shows the camera
+on its screen in reverse and pauses the player (media-ctl, UDP 5602), and
+audio-mixer plays the video sound and the chimes on plughw:CARD=Audio,DEV=1.
+    /etc/init.d/vehicle-bench reverse   hold reverse (again: release)
+    media-link -s warn                  a chime, played by media1
+    usbip list -l (dom0)   usbip port (media1)
+Not yet tested on the board.
+
+FreeRTOS screen: rtos1 drives an ILI9341 SPI TFT itself (SPI2 + GPIO5 mapped
+1:1 with iomem; dom0's rtos1-hwprep sets clocks and pin mux). After rewiring
+the panel: xl destroy rtos1; rtos1-start.
 
 
 Recipes
@@ -132,19 +148,32 @@ Recipes
   recipes-extended/xen         Xen 4.16: Cortex-A12/A17 proc info, L2CTLR emulation,
                                RK3288 platform (reset), release/debug config
   recipes-extended/xenbr0      guest bridge 192.168.100.1/24 + NAT
-  recipes-extended/xen-guests  guest autostart, hardware watchdog keep-alive,
-                               udev rule for the onboard USB hub
-  recipes-extended/guest-vnc     VNC client: Xen guest PV framebuffer on HDMI,
+  recipes-extended/xen-guests  guest autostart (media1 start check and restart),
+                               hardware watchdog keep-alive, USB hub udev rule
+  recipes-extended/guest-vnc   VNC client: Xen guest PV framebuffer on HDMI,
                                forwards touchscreen/mouse/keyboard input
+  recipes-extended/display-map which OS on which screen (default hdmi=vnc:5901)
+  recipes-extended/media-guest media1.cfg
+  recipes-extended/usb-share   dom0: export webcam + sound codec (USB/IP)
+  recipes-extended/media-link  dom0: gear frames and chimes to media1
+  recipes-extended/media-player  media1: video/picture player, media-ctl
+  recipes-extended/usb-attach  media1: attach dom0's USB/IP devices
+  recipes-extended/rear-camera media1: rear camera in reverse
+  recipes-extended/audio-mixer media1: video sound + chimes to the jack
+  recipes-extended/xen-consoles  tmux consoles: dom0, rtos1, media1
   recipes-extended/vehicle-bench  vehicle-sim (test vehicle on vcan0), can2rtos
                                (read-only CAN -> FreeRTOS gateway), listen-only setup
   recipes-extended/cluster-hdmi  instrument-cluster dashboard on the HDMI framebuffer
   recipes-extended/ignition-watch  clean power-off on ACC off (GPIO, disabled)
   recipes-devtools/qemu        QEMU as Xen device model only (i386 target, xen)
-  recipes-kernel/linux         dom0 kernel: keep timer7 running, bridge support
+  recipes-kernel/linux         dom0/media1 kernel: keep timer7 running, any HDMI
+                               pixel clock, lowmem DMA pages, USB/IP frame number;
+                               bridge, display, CAN and USB/IP options
   recipes-rtos/freertos-xen-guest  FreeRTOS guest (PV console, RTDS pool setup,
-                               vehicle task: real-time checks of the CAN data)
-  recipes-core/images          tinker-xen-test-image
+                               vehicle task: real-time checks of the CAN data,
+                               ILI9341 TFT dashboard, rtos1-hwprep)
+  recipes-core/images          tinker-xen-test-image (card, dom0), media-guest-image
+  classes                      tinker-ssh, tinker-autologin (dom0 and media1)
   recipes-core/sysvinit        no getty on the hypervisor's UART under Xen
   wic/tinker-xen.wks           card layout above
 
@@ -158,8 +187,10 @@ Known limitations
     non-secure world, and the PSCI monitor lives in reserved (not
     TrustZone-protected) RAM.
   - RTDS is only used on one CPU: on all four CPUs it hit an assertion in
-    Xen 4.16 (rt.c:587). RTOS jitter: about +-2 us idle, up to +-60 us while
-    guest workloads are busy.
+    Xen 4.16 (rt.c:587; fixed since by patches 0004/0005). RTOS 10 ms task
+    9941-10080 us while media1 decodes video.
+  - media1 sometimes reads corrupt disk blocks in its first seconds after a
+    cold boot (cause unknown); xen-guests detects it and restarts media1.
   - No CPU frequency scaling under Xen; the CPUs stay at 500 MHz.
   - Automotive: a bench and listen-only monitoring system, not a certified
     (ISO 26262) one. It must not control anything in a car. CAN reaches
@@ -185,5 +216,5 @@ Recovery plan
   4. Debug a Xen boot:      at the U-Boot prompt load a debug Xen into RAM
                             (loady ${xen_addr}) and run the xen-boot.cmd commands
                             by hand; nothing is written to the card.
-  5. Card does not boot:
+  5. Card does not boot:     write the card again (./flash.sh); a known-good
                             original image is in diagnostics/baseline/.
