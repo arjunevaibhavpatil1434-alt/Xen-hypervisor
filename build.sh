@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # build.sh - build the Tinker Board RK3288 Yocto + Xen image.
 #
+# The card image (tinker-xen-test-image) holds Xen and its three systems:
+# dom0 (Yocto Linux), rtos1 (FreeRTOS, its own SPI TFT) and media1 (Yocto
+# media guest, video on HDMI). media1's root filesystem and rtos1's binary
+# are built as part of it.
+#
 #   ./build.sh                      build tinker-xen-test-image
 #   ./build.sh <target>             build another bitbake target
 #   ./build.sh --sync [target]      run ./sync.sh first
@@ -28,7 +33,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --sync)  DO_SYNC=1 ;;
         --clean) DO_CLEAN=1 ;;
-        -h|--help) sed -n '2,18p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,22p' "$0"; exit 0 ;;
         -*) echo "Unknown option: $1" >&2; exit 2 ;;
         *)  IMAGE_TARGET="$1" ;;
     esac
@@ -83,11 +88,27 @@ echo "Build time: $(( ($(date +%s) - start) / 60 )) min, exit code $rc" | tee -a
 
 DEPLOY_DIR="$BUILD_DIR/tmp/deploy/images/$MACHINE_VALUE"
 WIC="$DEPLOY_DIR/$IMAGE_TARGET-$MACHINE_VALUE.wic"
-echo "=== Artifacts in $DEPLOY_DIR"
-find "$DEPLOY_DIR" -maxdepth 1 \
-    \( -name '*.wic' -o -name '*.wic.bmap' -o -name '*.dtb' -o -name 'xen*' \
-       -o -name 'zImage*' -o -name 'u-boot*' -o -name 'idbloader*' \) -print | sort
+
+# size of a file in MB (follows links), "-" if missing
+size_mb() { [[ -e "$1" ]] && awk -v b="$(stat -Lc %s "$1")" 'BEGIN{printf "%.1f MB", b/1048576}' || echo "-"; }
+
+echo "=== Artifacts in $DEPLOY_DIR" | tee -a "$LOG"
+{
+    printf '  %-38s %s\n' "Xen       xen-$MACHINE_VALUE"                "$(size_mb "$DEPLOY_DIR/xen-$MACHINE_VALUE")"
+    printf '  %-38s %s\n' "dom0 + media1 kernel  zImage"             "$(size_mb "$DEPLOY_DIR/zImage")"
+    printf '  %-38s %s\n' "rtos1     freertos-xen-guest.bin"         "$(stat -Lc '%s bytes' "$DEPLOY_DIR/freertos-xen-guest.bin" 2>/dev/null || echo -)"
+    printf '  %-38s %s\n' "media1    media-guest-image-$MACHINE_VALUE.ext4" "$(size_mb "$DEPLOY_DIR/media-guest-image-$MACHINE_VALUE.ext4")"
+    printf '  %-38s %s\n' "boot      u-boot, idbloader, dtb"         "$(ls "$DEPLOY_DIR" | grep -cE '^(u-boot.*\.bin|idbloader\.img|.*\.dtb)$') files"
+} | tee -a "$LOG"
 if [[ -e "$WIC" ]]; then
+    written=""
+    if [[ -f "$WIC.bmap" ]]; then
+        blocks=$(sed -n 's:.*<MappedBlocksCount> *\([0-9]*\).*:\1:p' "$WIC.bmap")
+        bsize=$(sed -n 's:.*<BlockSize> *\([0-9]*\).*:\1:p' "$WIC.bmap")
+        [[ -n "$blocks" && -n "$bsize" ]] && \
+            written=$(awk -v n="$blocks" -v b="$bsize" 'BEGIN{printf ", %.1f MB written to the card", n*b/1048576}')
+    fi
+    printf '  %-38s %s%s\n' "card      $(readlink -f "$WIC" | xargs basename)" "$(size_mb "$WIC")" "$written" | tee -a "$LOG"
     ( cd "$DEPLOY_DIR" && sha256sum "$(readlink -f "$WIC" | xargs basename)" ) | tee -a "$LOG"
-    echo "Flash with: ./flash.sh /dev/sdX"
+    echo "Flash with: ./flash.sh /dev/sdX   (./flash.sh --list finds the card)"
 fi
