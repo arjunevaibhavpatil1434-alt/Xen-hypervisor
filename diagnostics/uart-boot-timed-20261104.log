@@ -1,0 +1,646 @@
+1793779597.566851 Broadcast message from rooard (Fri Mar7 2018):
+1793779597.571919 stem is going down for reboot NOW!
+1793779597.574938 INIT: Srunlevel: 6
+1793779597.581332 INIT: Ssses configured via /ethe TERM signal
+1793779600.709044 Sending processes configured via /etc/inittab gnal
+1793779601.773022 topping Dropbear SSH server: stopped /upbear (pid 265)
+1793779601.912490 dropbeSping Xen guest media1
+1793779605.619887 [  679.986872] usbip-host 3-1: unlinked _urb()
+1793779605.626116 [  usbip-host d by a callnk_urb()
+1793779605.633064 [  679.996812] usbip-host 3-1: unlinked by a call to usb_unlink_urb()
+1793779605.639024 [  680.001354] usbip-host 3-1: usb_set_interinf 4 alt 0
+1793779605.699633 [  680.067880] usbip-host 3-1: recv a header, 0
+1793779605.709259 [  680.071610ed by a call to usb_kill_urb() because of cleaning up a virtual connection
+1793779605.718891 [  680.073746] usbip-host 3-1: stopped by a call to usb_kill_urb() becausg up a virtuon
+1793779605.859374 .223882] us: reset high-speed USB device number 2 using ehci-platform
+1793779606.319003 [  680.687588] usbip-host 3-1: device reset
+1793779611.135047 [  685.502233] xenbr0: port 1(vif3.0) entered disabled state
+1793779611.392153 [  685.759702] xenbr0: port 1(vif3.0) entered disabled state
+1793779611.397143 [  685.760123] device vif3.0 left promiscuous mode
+1793779611.402079 [  685.760186] xenbr0: port 1(vif3.0) entered disabled state
+1793779613.936444 Stopping Xen guest rtos1
+1793779614.190103 505] input:  Audio Consumer Control /platform/ffusb3/3-1/3-1BDA:49F6.000ut3
+1793779614.263079   688.614269] input: Generic USB Aum/ff500000.usb/usb3/3-13:0BDA:49F6.0002/input/688.615203] hid-generic49F6.0002: input: USB Hice [Generi on usb-ff5input6
+1793779614.270114 [  dwmmc_rockchip ff0d000C supports 3s mode.
+1793779614.283126 [] dwmmc_roc00.mmc: UsiDMA controlmmc_rockchimc: Version
+1793779614.296990 [  688.62rockchip ffDW MMC contq 35,32 bit idth,256 deebip: info: ue on busid 3e
+1793779614.343047 can't open '/dev/misc/rtc': No sucrectory
+1793779614.394760 ng syslogd/klogd: stopped syslogd (pid 273)
+1793779614.410123 stopped klogd (pid 276)
+1793779614.411571 done
+1793779614.431137 Unmounting remote...
+1793779614.659077 ing network interfaces.[  689.025979] rk_gmac-dwmacthernet eth0own
+1793779614.746060 8574] rk_gmac-dwmac ff2et eth0: PH00] driver [gabit EtherLL)
+1793779614.754090 [  68_gmac-dwmac hernet eth0:EM_TYPE_PAGE
+1793779614.761318 [  689.11ac-dwmac ff290000.ethern Safety Features support found
+1793779614.768109 [  689.113003] rk_gmac-dwmac ff290000.ethernet eth0: PTP not supported by HW
+1793779614.776477 [  689.113074] rk_gmac-dwmac ff290000.ethernet eth0: configuring for phy/rgmii link mode
+1793779614.828183 done.
+1793779614.858199 Stopping xenconsoled
+1793779614.869434 Stopping QEMU
+1793779615.913123 WARNING: as it cannot be restaSendiesses the TE.
+1793779618.921402 [  690.317238watchdog did not stop![  693.284943] rkhernet eth0: Link is Upll - flow control off
+1793779618.928299 [  693.285109] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+1793779620.971620 Sending all processes the KILL signal...
+1793779621.064327 Deactivating swap...
+1793779621.073374 Unmounting local filesystems...
+1793779621.134391 [  695.499024] EXT4-fs (mmcblk0p7): re-mounted. Opts: (null). Quota mode: disabled.
+1793779621.256622 Rebooting... [  695.625380] reboot: Restarting system
+1793779621.260504 (XEN) Hardware Dom0 shutdown: rebooting machine
+1793779621.339294 
+1793779621.353397 U-Boot TPL 2022.01 (Jan 10 2022 - 18:Returning to boot ROM...
+1793779621.599241 
+1793779621.604294 U-Boot SPL 2022.01 (Jan 10 2022 - 18:46:34 +0000)
+1793779622.015540 
+1793779622.015652 
+1793779622.019567 U-Boot 2022.01 (Jan 10 2022 - 18:46:34 +0000)
+1793779622.019666 
+1793779622.021328 SoC: Rockchip rk3288
+1793779622.022437 Reset cause: RST
+1793779622.024348 Model: Tinker-RK3288
+1793779622.026329 DRAM:  2 GiB
+1793779622.211317 PMIC:  RK808 
+1793779622.445306  dwmmc@ff0c000Loading Environment fr*** Warning -sing default t
+1793779622.445408 
+1793779622.484245 rockchip_rk32iled to get ahb reset (rockchip_rp@ff930000: failed to get ahb rese
+1793779622.487286 In:    ser:   serial
+1793779622.489279 er-RK3288
+1793779623.646679 et:   eth0: ethe0
+1793779624.903600 starting usb@ff540000: USB DWC2
+1793779633.166593 Bus usb@ff580000: USB DWC2
+1793779634.506176 scanning bus usb@ff540000 for devices... 2 USB Device(s) found
+1793779635.644890 scannff580000 for devices... 1 USB Device(s) found
+1793779635.650702        scanning usb for storage devices... 0 Storage Device(s) found
+1793779637.657623 Hit any key to stop autoboot:  2  1  0 
+1793779637.660025 MMC Device 0 not found
+1793779637.662565 no mmc device at slot 0
+1793779637.805640 switch to partitions #0, OK
+1793779637.807830 mmc1 is current device
+1793779637.922913 Scanning mmc 1:6...
+1793779637.936925 Found U-Boot script /boot.scr
+1793779637.946904 2855 bytes read in 3 ms (928.7 KiB/s)
+1793779637.949711 ## Executing script at 00000000
+1793779637.964924 40884 bytes read in 4 ms (9.7 MiB/s)
+1793779638.014640 917560 bytes read in 43 ms (20.3 MiB/s)
+1793779638.488582 10453504 bytes read in 460 ms (21.7 MiB/s)
+1793779638.500867 Kernel image @ 0x2000000 [ 0x000000 - 0x11e290 ]
+1793779638.504850 ## Flattened Device Tree blob at 01f00000
+1793779638.507598    Bootingfdt blob at 0x1f00000
+1793779638.512562 dwc2_usb usb@ff540000: Error disabling vbus supply
+1793779638.526423 device_remove: Device 'usb@ff540000' failed to removren are goneserving fdtion failed (00 size=6200)
+1793779638.531562    Loa Tree to 0fff0000, end 0 OK
+1793779638.538481 
+1793779638.540568 Startin.
+1793779638.540640 
+1793779638.885559  Xen 4.16.1ersion 4.16 (arm-poky-i-gcc (GCC) 11.5.0) debt 26 09:36:0(XEN) Latest ChangeSet: Tue Apr 1222 +0200 git:f265444922N) build-id:5f4fc553d19907f4ef5
+1793779638.892638 (XEN) Processor: 410fc0d1: "ARM Limite: 0x0, part x1
+1793779638.894495 (XEN) 32ion:
+1793779638.898622 (XEN)  Features: 00001131:00011011
+1793779638.904474 (XEN)ction Sets: Thumb ThumbJazelle
+1793779638.908586 (XEsions: GenericTimer Security
+1793779638.911515 (XEN)   Debug Fe10555
+1793779638.914644 (XEN)   Auxiliar00000000
+1793779638.935623 (Xy Model Fea105 4000000            1240000 0210   ISA Featu0 13112111 XEN)                 11112131 00011142 00000000ng SMC Callion v1.0
+1793779638.937619 (XECI v1.0
+1793779638.940565 (XEwing 4 CPUs
+1793779638.948486 (XEN) Generic Timer IRQ: phys=30 hyp=26 virt=27 Freq: 24EN) GICv2 inn:
+1793779638.952596 (XEN)   ist_addr=00000000ffc01000
+1793779638.964498 (XEN)         gic_c0000ffc02000     gic_hyp000ffc04000    gic_vcpu_addr=00000000ffc06000
+1793779638.967647 (XEN)         gic_main25
+1793779638.975575 (XEN) Gnes, 4 cpusD 0200143b) Framework v1.0.1 initialized
+1793779638.978611 (XEing XSM SILO mode
+1793779638.995621 (XENeduler: SMP uler rev2 (EN) Initializing Credit2 schedulerd_precision(XEN)  load_window_shif)  underloaderance: 0
+1793779638.999587 (XEN)  overload_balance-3
+1793779639.002491 (XEN)  rangement: socket
+1793779639.006539 (XENcement granms
+1793779639.010670 (XEN) load tracking window leng4 ns
+1793779639.014515 (XENconsole rin
+1793779639.028498 (XEN) VFP  0x41 architecture 3 part 0x30 variant 0xd revCPU0: Guestl try 1 timusing the d Bringing up CPU1
+1793779639.035618 (XEN) CPU1: Guest atomics will try 1 times before pausing the domain
+1793779639.037542 (Xoted.
+1793779639.039577 (XEN) Bringing up CPU2
+1793779639.047496 (XEN) CPU2ics will tryfore pausin
+1793779639.051601 (XEN) CPU (XEN) Bringing up CPU3
+1793779639.059613 (XEN) CPU3: Guest atomics will try 1 times before pausing the domain
+1793779639.061695 (XEN) CPU 3 booted.
+1793779639.063705 (XEN) Brought up 4 CPUs
+1793779639.066647 (XEN) I/O virtuasabled
+1793779639.068557 (XENit IPA
+1793779639.078618 (XENvels with or VTCR 0x8000Scheduling : cpu, 1 CPUesource
+1793779639.085579 (Xpu 0 to runN)  First cpu on runqueue, activating
+1793779639.088616 (XEN) Adding cpu 1 to runqueue 0
+1793779639.091614 (XEN) Adding cpu 2 to runqueue 0
+1793779639.094528 (XEN) Adding cpu 3 to runqueue 0
+1793779639.107613 (XEN) alternatives: Patching with alt table 002b288c ->(XEN) CPU2 wBPIALL on gXEN) CPU1 will execute BPIALL on guest exit
+1793779639.118597 (XEN) CPU0 wBPIALL on guXEN) CPU3 wBPIALL on guXEN) *** LOADING DOMAIN 0 ***
+1793779639.128593 (XEN0 kernel frole @ 0000000XEN) Allocappings totalling 320MB for dom0:
+1793779640.623925 (XEN) BANK[0] 0x00000010000000-0x00000020000000 (256MB)
+1793779640.628532 (XEN) BANK[10000000-0x000 (64MB)
+1793779640.633689 (Xable range: 0x00000002000000-0x00000002040000
+1793779640.675649 XEN) Allocating PPI 16 for e interruptxtended regy supported guest curreLoading zIma0000004000000017600000-08200
+1793779640.737758 ding d0 DTB to 0x0000000018000000-0x0000000018009bfd
+1793779640.742515 (XEN) Initial low memory virq threshold set at 0x4000 pages.
+1793779640.747268 bing Free RAM in background
+1793779640.748624 (XEN) el: All
+1793779640.751696 (XEN) Guest Loglevel: All
+1793779640.757698 (XEN) *** Serial input to DOM0 (type 'CTRL-a' three times to switch input)
+1793779641.800292 (XENkB init memo[    0.000000] Booting Linux on physical CPU 0x0
+1793779641.815829 [    0.000000] Linux version 5.15.201-yocto-standard (oe-user@oe-host) (arm-poky-linux-gnueabi-gcc (GCC) 11.5.0, GNU ld (GNU Binutils) 2.38.20220708) #1 SMP Mon Feb 23 04:44:11 UTC 2026
+1793779641.822825 [    0.000000] CPU: ARMv7 Processor [410fc0d1] revision 1 (ARMv7), cr=10c5387d
+1793779641.828724 [    0.000000] CPU: div instructions available: paton code
+1793779641.836752 [  CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+1793779641.848547 [    0.000000] OF: fdt: Machine model: R88 Asus Tink    0.00000 xenboot0 at I/O port 0 '')
+1793779641.857655 [    0ntk: bootcoot0] enable0000] Memorta cache writealloc
+1793779641.861668 [    0.000000] Xen 4.16 support found
+1793779641.864874 [    0.000000] efi: UEFI not found.
+1793779641.868652 [    0.000000] cma: Reserved 64 MiB at 0x70000000
+1793779641.940692 [    0.000000] Zone ranges:
+1793779641.946659 [    0.000000]   DMA      [mem 0x0000000010000000-0x000000001fffffff]
+1793779641.949680 [    Normal   empty
+1793779641.955688 [    0.000000]   HighMem  [mem 0x0000000020000000-0x00000000feffffff]
+1793779641.960732 [    0.000000] Movable zone start for each node
+1793779641.963702 [    0.000000] Early memory node ranges
+1793779641.969549 [     node   0: 00010000000-0x000000001fffffff]
+1793779641.982668 [    0.000000]   node   0: [mem 0x0000000070000000-0x0000000073ffffff]000]   node   0: [mem 0x00000000fe000000-0x00000000feffffff]
+1793779641.989660 [    0.000000] Initmem setup node 0 [mem 0x0000000010000000-0x00000000feffffff]
+1793779641.994751 [    0.0: probing for conduit method from DT.
+1793779641.998682 [    0.000000] psci: PSCIv1.1 detected in firmware.
+1793779642.004752 [    0.000000] psci: Using standard PSCI v0.2 function IDs
+1793779642.013791 [    0.000Trusted OS migration no[    0.000000] psci: SMC Calling Convention v1.1
+1793779642.016733 (XEN) d0v0 Unhandled SMC/HVC: 0x8600ff01
+1793779642.023631 [    0.000000] percpu: Embedded 16 pages/cpu s35468 r8192 d21876 u65536
+1793779642.029742 [    0.0t 1 zonelists, mobility grouping on.  Total pages: 85440
+1793779642.041668 [    0.000000] Kernel command line: console=hvc0 earlycon=xenboot root=PARTLABEL=root rootwait rw rootfstype=ext4 clk_ignore_unused
+1793779642.049620 [    0.000000] Dentry cache hash table entries: 32768 (order: 5es, linear)
+1793779642.056502 [    0.000000] Inode-cache hash table entries: 16384 (order: 4, 65536 bytes, linear)
+1793779642.062645 [    0.000000] mem auto-init: stack:off, heap allocfree:off
+1793779642.077635 [    0.000000] Memory: 232436K/344064K available (15360K kernel code, 2246K rwdata, 5684K rodata, 2048K init, 412K bss, 46092K reserved, 655rved, 0K highmem)
+1793779642.084713 [    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+1793779642.088676 [    0.000000] trace event string verifier disabled
+1793779642.093678 [   rcu: Hierarchical RCU implementation.
+1793779642.097663 [    0.000000] rcu: 	RCU event tracing is enabled.
+1793779642.104648 [    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=16 s=1.
+1793779642.112535 [    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+1793779642.124544 [    0.000000] rcu: Adjusting geometry for rcf=16, nrø5   0.000000]6, nr_irqs: 16, preallocated irqs: 16
+1793779642.130709 (XEN) d0v0: vGICD: unhandled word write 0xffffffff to ICACTIVER4
+1793779642.147792 (XEN) d0v0: vGICD: unhandled word write 0xffffffff to ICAEN) d0v0: vGICD: unhandte 0xffffffff to ICACTI) d0v0: vGICd word write 0xffffffff to ICACTIVER16
+1793779642.153686 (XEN) d0v0: vGICD: unhandled word write 0xffffffff to ICACTIVER20
+1793779642.158716 (XEN) d0v0: vGICD: unhandled word write 0xfCACTIVER0
+1793779642.164676 [    0.000000] arch_timer: cp15 timer(s) running at 24.00MHz (virt).
+1793779642.175717 [    0.000000] clocksouys_counter: fffffffffff max_cycles:, max_idle_ns: 440795202592 ns
+1793779642.183726 [    0.000001] sched_clock: 56 bits at 24MHz, resolution 41ns, wraps every 4398046511097ns
+1793779642.189719 [    0.000059] Switching to timer-based delay loop, resolution 41ns
+1793779642.195280 [    0.007376] Console: colour dummy device 80x30
+1793779642.198689 [    0.007424] printk: console [hvc0] enabled
+1793779642.202691 [    0.007424] printk: console [hvc0] enabled
+1793779642.207830 [    0.007478] printk: bootconsole [xenboot0] disabled
+1793779642.222736 [    0.007478] prinole [xenboot0] disabled585] Calibrating delay ed), value calculated using timer frequency.. 48.00 BogoMIPS (lpj=240000)
+1793779642.227616 [    0.007676] CPU: Testing write buffer ok
+1793779642.232697 [    0.007757] CPU0: Spectre PIALL workaround
+1793779642.237763 [    0.007807] pid_max: default: 32768 minimum: 301
+1793779642.244570 [    0.008047] Mount-cache hash table entries: 1024 (o6 bytes, linear)
+1793779642.252687 [    0.008128] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+1793779642.258728 [    0.009396] CPU0: thread -1, cpu 0, socket 0, mpidr 80000000
+1793779642.264806 [    0.011510] xen:grant_table: Grant tables using version 1 layout
+1793779642.267541 [    0.011616] Grant table initialized
+1793779642.272825 [    0.011717] xen:events: Using FIFO-based ABI
+1793779642.275823 [    0.011799] Xen: initializing cpu0
+1793779642.282810 [    0.011934] Setting up static identity map for 0x10300000 - 0x103000ac
+1793779642.287272 [    0.014102] rcu: Hierarchical SRCU implementation.
+1793779642.291958 [    0.019062] EFI services will not be available.
+1793779642.297269 [    0.019299] smp: Bringing up secondary CPUs ...
+1793779642.300562 [    0.019353] smp: Brought up 1 node, 1 CPU
+1793779642.306701 [    0.019397] SMP: Total of 1 processors activated (48.00 BogoMIPS).
+1793779642.311575 [    0.019466] CPU: All CPU(s) started in SVC mode.
+1793779642.314829 [    0.019988] devtmpfs: initialized
+1793779642.322542 [    0.029899] VFP support v0.3: implementor 41 architecture 3 part 30 variant d rev 0
+1793779642.339805 [    0.030204] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns0302] futex hash table  (order: 2, 16384 bytes
+1793779642.344543 [    0.032613] pinctrl core: initialized pinctrl subsystem
+1793779642.348556 [    0.034364] DMI not present or invalid.
+1793779642.354700 [    0.03Registered PF_NETLINK/PF_ROUTE protocol family
+1793779642.361687 [    0.038035] DMA: preallocated 256 KiB pool for atomic coherent allocations
+1793779642.367702 [    0.041423] thermal_sys: Registered thermal governor 'step_wise'
+1793779642.374812 [    0.042161] xen:swiotlb_xen: Warning: only able to allocate 8 MB for software IO TLB
+1793779642.381733 [    0.045418] software IO TLB: mapped [mem 0x13000000-0x13800000] (8MB)
+1793779642.383747 [    0.046059] No ATAGs?
+1793779642.392676 [    0.046189] hw-breakpoint: Debug register acc4e11) caused undefined on CPU 0
+1793779642.403302 [    0.046274] hw-breakpoint: Debug register access (0xee103e11) caused undefined instruction on CPU 0
+1793779642.408681 [    0.046346] hw-breakpoint: Failed to enable monitor mode on CPU 0.
+1793779642.413294 [    0.049900] Serial: AMBA PL011 UART driver
+1793779642.428267 [    0.077115] platform ff980000.hdmi: Fixing up cyclcy with ff9[    0.077276] platform ff980000.hdmi: Fixing up cyclic dependency with ff930000.vop
+1793779642.434845 [    0.094491] rockchip-gpio ff750000.gpio0: probed /pinctrl/gpio0@ff750000
+1793779642.441792 [    0.095431] rockchip-gpio ff780000.gpio1: probed /pinctrl/gpio1@ff780000
+1793779642.447587 [    0.096341] rockchip-gpio ff790000.gpio2: probed /pinctrl/gpio2@ff790000
+1793779642.454586 [  rockchip-gpio ff7a0000.gpio3: probed /pinctrl/gpio3@ff7a0000
+1793779642.461648 [    0.098237] rockchip-gpio ff7b0000.gpio4: probed /pinctrl/gpio4@ff7b0000
+1793779642.468731 [    0.0chip-gpio ff7c0000.gpio5: probed /pinctrl/gpio5@ff7c0000
+1793779642.474682 [    0.100066] rockchip-gpio ff7d0000.gpio6: probed /pinctrl/gpio6@ff7d0000
+1793779642.488666 [    0.100994] rockchip-gpio ff7e000l/gpio7@ff7e0.101905] ro ff7f0000.gpio8: probed /pinctrl/gpio8@ff7f0000
+1793779642.493642 [    0.128020] xen:balloon: Initialising balloon driver
+1793779642.498585 [    0.mu: Default domain type: Translated 
+1793779642.507708 [    0.132689] iommu: DMA domain TLB invalidation policy: strict  0.134909] ed
+1793779642.511757 [    0.135925] SCSI subsystem initialized
+1793779642.516829 [    0.136469] usbcore: registered new interface driver usbfs
+1793779642.522741 [    0.136593] usbcore: registered new interface driver hub
+1793779642.527798 [    0.136694] usbcore: registered new device driver usb
+1793779642.532659 [    0.139051] pps_core: LinuxPPS API ver. 1 registered
+1793779642.541670 [    0.1core: Softwa6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+1793779642.545727 [    0.139203] PTP clock support registered
+1793779642.548575 [    0.139518] EDAC MC: Ver: 3.0.0
+1793779642.554680 [    0.143562] clocksource: Switched to clocksource arch_sys_counter
+1793779642.560307 [    0.247295] NET: Registered PF_INET protocol family
+1793779642.567621 [    0.247569] IP idents hash table entries: 4096 (order: 3, 32768 bytes, linear)
+1793779642.575609 [    0.248450] tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)
+1793779642.590756 [    0.248550] Table-perturb hash table entries: 65536 (order: 6tes, linear)48628] TCP established hash table entries: 2048 (order: 1, 8192 bytes, linear)
+1793779642.598652 [    0.248719] TCP bind hash table entries: 2048 (order: 2, 16384 bytes, linear)
+1793779642.604843 [    0.248831] TCP: Hash tables configured (established 048)
+1793779642.618570 [   DP hash tabl256 (order: es, linear)9051] UDP-Lile entries: 256 (order: es, linear)
+1793779642.623692 [    0.249290] NET: Registered PF_UNIX/PF_LOCAL protocol family
+1793779642.629735 [    0.254214] RPC: Registered named UNIX socket transport module.
+1793779642.634855 [    0.254281] RPC: Registered udp transport module.
+1793779642.639609 [    0.254329] RPC: Registered tcp transport module.
+1793779642.645749 [    0.: Registered tcp NFSv4.1 backchannel transport module.
+1793779642.650273 [    0.254433] PCI: CLS 0 bytes, default 64
+1793779642.657813 [    0.255104] armv7-pmu arm-pmu: hw perfevents: failed to parse interrupt-affinity[0]
+1793779642.663549 [    0.255198] armv7-pmu: probe of arm-pmu failed with error -22
+1793779642.667949 [    0.tialise system trusted keyrings
+1793779642.674558 [    0.279043] workingset: timestamp_bits=14 max_order=17 bucket_order=3
+1793779642.680689 [    0.287668] squashfs: version 4.0 (2009/01/31) Phir
+1793779642.685529 [    0.288664] NFS: Registering the id_resolver key type
+1793779642.689878 [    0.288755] Key type id_resolver registered
+1793779642.700685 [    0.288800] Key type id_legacy regi  0.288965] nfs4filelayout_init: NFSv4 File Layout Driver Registering...
+1793779642.707562 [    0.289030] nfs4flexfilelayout_init: NFSv4 Flexfile Layout Driver Registering...
+1793779642.712694 0] ntfs: driver 2.1.32 ].
+1793779642.716707 [    0.289793] Key type asymmetric registered
+1793779642.721701 [    0.289858] Asymmetric key parser 'x509' registered
+1793779642.725693 [    0.290001] bounce: pool size: 64 pages
+1793779642.732759 [    0.290110] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 247)
+1793779642.737762 [    0.290181] io scheduler mq-deadline registered
+1793779642.741758 [    0.290231] io scheduler kyber registered
+1793779642.749768 [    0.386345] dma-pl330 ff250000.dma-controller: Loaded driver for PL330 DMAC-241330
+1793779642.758727 [    0.386429] dma-pl330 ff250000.dma-contro-128x8bytes Num_Chans-8 Num_Events-16
+1793779642.766738 [    0.387388] dma-pl330 ff600000.dma-controller: Loaded driver for PL330 DMAC-241330
+1793779642.775711 [    0.387466] dma-pl330 ff600000.dma-controller: 	DBUFF-64x8bytes Num_Chans-5 Num_Peri-6 Num_Events-10
+1793779642.780654 [    0.408669] xen:xen_evtchn: Event-channel device installed
+1793779642.787572 [    0.524947] Serial: 8250/16550 driver, 5 porting enabled
+1793779642.796682 [    0.540690] ff180000.serial: ttyS0 at MMIO 0xff180000 (irq = 38, base_baud = 1500000) is a 16550A
+1793779642.805578 [    0.542136] ff1900tyS1 at MMIO 0xff190000 (irq = 39, base_baud = a 16550A
+1793779642.813584 [    0.543619] ff1b0000.serial: ttyS3 at MMIO 0xff1b0000 (irq = 40, base_baud = 1500000) is a 16550A
+1793779642.822652 [    0.545033] ff1c0000.serial: ttyS4 at MMIO 0xff1c0000 (irq = 41, base_baud = 1500000) is a 16550A
+1793779642.828293 [    0.548590] SuperH (H)SCI(F) driver initialized
+1793779642.831676 [    0.550306] msm_serial: driver initialized
+1793779642.836632 [    0.550356] STMicroelectronics ASC driver initialized
+1793779642.840683 [  STM32 USART driver initialized
+1793779642.844691 [    0.610458] brd: module loaded
+1793779642.847846 [    0.633576] loop: module loaded
+1793779642.852603 [    0.63id max_queues (4), will use default max: 1.
+1793779642.856710 [    0.651417] CAN device driver interface
+1793779642.862707 [    0.653102] bgmac_bcma: Broadcom 47xx GBit MAC driver loaded
+1793779642.873655 [    1000e: Intel(R) PRO/1000 Network Dr 0.655252] eright(c) 1999 - 2015 Intel Corporation.
+1793779642.879776 [    0.655387] igb: Intel(R) Gigabit Ethernet Network Driver
+1793779642.884649 [    0.655440] igb: Copyright (c) 2007-2014 Intel Corporation.
+1793779642.890836 [    0.663136] xen_netfront: Initialising Xen virtual ethernet driver
+1793779642.896773 [    0.663260] pegasus: Pegasus/Pegasus II USB Ethernet driver
+1793779642.902734 [    0.663363] usbcore: regiinterface dr
+1793779642.907782 [    0.663485] usbcored new interface driver asix
+1793779642.913799 [    0.663644] usbcore: registered new interface driver ax88179_178a
+1793779642.919980 [    0.663759] usbcore: registered new interface driver cdc_ether
+1793779642.925735 [    0.663881] usbcore: registered new interface driver smsc75xx
+1793779642.931911 [    0.664000] usbcore: registered new interface driver smsc95xx
+1793779642.937765 [    0.664106] usbcore: registered new interface driver net1080
+1793779642.943714 [    0.664213] usbcore: registered new interface driver cdc_subset
+1793779642.949324 [    0.664341] usbcore: registered new interface driver zaurus
+1793779642.954744 [    0.664466] usbcore: registered new interface driver cdc_ncm
+1793779642.961667 [    0.667990] dwc2 ff540000.usb: supply vusb_d not found, usingator
+1793779642.968769 [    0.668227] dwc2 ff540000.usb: supply vusb_a not found, using dummy regulator
+1793779642.973857 [    0.798907] dwc2 ff540000.usb: DWC OTG Controller
+1793779642.980849 [    0.798995] dwc2 ff540000.usb: new USB bus registered, assigned bus number 1
+1793779642.986937 [    0.799092] 00.usb: irq 48, io mem 0xff540000
+1793779642.989844 [    0.799987] hub 1-0:1.0: USB hub found
+1793779642.994128 [    0.800090] hub 1-0:1.0: 1 port detected
+1793779643.001782 [    0.800979] dwc2 ff580000.usb: supply vusb_d not found, using dummy
+1793779643.008734 [    0.8012580000.usb: supply vusb_a not foundmy regulator
+1793779643.081703     0.954337] dwc2 ff580000.usb: EPs: 10, dedicated fifos, 972 entries in SPRAM
+1793779643.093792 [    0.968307] dwc2 ff580000.usb: DWC OTG Controller
+1793779643.100679 [    0.968402] dwc2 ff580000.usb: new USB bus registered, assigned bus number 2
+1793779643.105763 [    0.968511] dwc2 f irq 49, io mem 0xff580000
+1793779643.109589 [    0.969320] hub 2-0:1.0: USB hub found
+1793779643.113720 [    0.969421] hub 2-0:1.0: 1 port detected
+1793779643.119768 [    0.971309] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+1793779643.124772 [    0.971374] ehci-pci: EHCI PCI platform driver
+1793779643.129707 [    0.971476] ehci-platform: EHCI generic platform driver
+1793779643.135737 [    0.971882] ehci-platform ff500000.ost Controller
+1793779643.143742 [    0.971972] ehci-platform ff500000.usbus registered, assigned 3
+1793779643.149745 [    0.9-platform ff500000.usb: irq 47, io mem 0xff500000
+1793779643.297308 [    1.170809] usb 1-1: new high-speed USB device number 2 using dwc2
+1793779643.323817 [    1.196817] ehci-platform ff500000.usb: USB 2.0 started, EHCI 1.00
+1793779643.335084 [    1.210623] hub 3-0:1.0: USB hub found
+1793779643.339335 [    1.210726] hub 3-0:1.0: 1 port detected
+1793779643.343703 [    1.i-omap: OMAP-EHCI Host Criver
+1793779643.347676 [  ehci-orion: EHCI orion driver
+1793779643.351821 [    1.212088] SPEAr-ehci: EHCI SPEAr driver
+1793779643.356854 [    1.212368] ehci-st: EHCI STMicroelectronics driver
+1793779643.361332 [    1.212642] ehci-atmel: EHCI Atmel driver
+1793779643.367718 [ ] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+1793779643.371762 [    1.212983] ohci-pci: OHCI PCI platform driver
+1793779643.377268 [    1.213096] ohci-platform: OHCI generic platform driver
+1793779643.381300 [    1.213438] SPEAr-ohci: OHCI SPEAr driver
+1793779643.385552 [    1.213762] ohci-st: OHCI STMicroelectronics driver
+1793779643.389781 [    1.214040] ohci-atmel: OHCI Atmel driver
+1793779643.396665 [    1.215193] usbcore: registered new interface driver us
+1793779643.401350 [    1.223785] i2c_dev: i2c /dev entries driver
+1793779643.404614 [    1.8 0-001b: c
+1793779643.649722 [5] vdd_arm: supplied by[    1.522357] usb 3-1: new high-speed USB device number 2 using ehci-platform
+1793779643.672740 [    1.549050] vdd_gpu: supplied by vcc_sys
+1793779643.676593 [    1.549471] vcc_ddr: supplied by vcc_sys
+1793779643.680663 [    1.550112] hub 1-1:1.0: USB hub found
+1793779643.687766 [    1.563349] vcc_io: supplied by vcc_sys
+1793779643.691733 [    1.563865] hub 1-1:1.0: 4 ports detected
+1793779643.703349 [    1.578408] vcc18_ldo1: supplied by vcc_sys
+1793779643.728760 [    1.604010] vcc33_mipi: supplied by vcc_sys
+1793779643.760758 [    1.636958] vdd_10: supplied by vcc_sys
+1793779643.772878 [    1.647918] vcc18_codec: supplied by vcc_io
+1793779643.789301 [    1.664184] vccio_sd: supplied by vcc_io
+1793779643.813759 [    1.689554] vdd10_lcd: supplied by vcc_io
+1793779643.823862 [    1.699851] vcc_18: supplied by vcc_sys
+1793779643.844349 [    1.719239] vcc18_lcd: supplied by vcc_sys
+1793779643.852868     1.728610] vplied by vcc_io
+1793779643.856722 [    cc33_lan: supplied by vcc_io
+1793779643.895763 [    1.769662] dw_wdt ff800000.watchdog: No valid pecified
+1793779643.903791     1.779293] cpu cpu0: OPP table can't be empty
+1793779643.909790 [    1.782421] sdhci: Secure Digital Host Controller Interface driver
+1793779643.914799 [    1.782483] sdhci: Copyright(c) Pierre Ossman
+1793779643.920772 [    1.785990] Synopsys Designware Multimedia Card Interface Driver
+1793779643.926925 [    1.789094] sdhci-pltfm: SDHCI platform and OF driver helper
+1793779643.933767 [    1.795904] dwmmc_rockchip ff0c0000.mmc: IDMAC supports 32-bit address mode.
+1793779643.939809 [    1.796099] dwmmc_rockchip ff0c0000.mmc: Using internal DMA controller.
+1793779643.945650 [    1.796169] dwmmc_rockchip ff0c0000.mmc: Version ID is 270a
+1793779643.955702 [   wmmc_rockchip ff0c0000.mmc: DW MMC controller at irq 34,32 bit host data width,256 deep fifo
+1793779643.959798 [    1.796888] mmc_host mmc0: card is polling.
+1793779643.966739 [    1.806131] dw ff0d0000.mmc: IDMAC supports 32-bit address mode.
+1793779643.973814 [    1.806307] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779643.978829 [    1.806379] dwmmc_rockchip ff0d0000.mmc: Version ID is 270a
+1793779643.988578 [    1.806502] dwmmc_rockchip ff0d0000.mmc: DW MMC controller at irq 35,32 bit host data width,256 deep fifo
+1793779643.997775 [    1.810594] mmc_host mmc0: Bus speed (slot 0) = 400000Hz (slot req 400000Hz, actual 400000HZ div = 0)
+1793779644.003902 [    1.822146] ledtrig-cpu: registered to indicate activity on CPUs
+1793779644.009577 [    1.824273] usbcore: registered new interface driver usbhid
+1793779644.013680 [    1.824330] usbhid: USB HID core driver
+1793779644.018727 [    1.832818] NET: Registered PF_INET6 protocol family
+1793779644.022876 [    1.855387] Segment Routing with IPv6
+1793779644.027319 [    1.855504] In-situ OAM (IOAM) with IPv6
+1793779644.032725 [    1.855652] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+1793779644.038337 [    1.856424] NET: Registered PF_PACKET protocol family
+1793779644.041817 [    1.856532] can: controller area network core
+1793779644.046929 [    1.856748] NET: Registered PF_CAN protocol family
+1793779644.049806 [    1.856806] can: raw protocol
+1793779644.058834 [    1.856851] can: broadcast manager pr   1.856902] can: netlink gateway - max_hops=1
+1793779644.063324 [    1.857376] Key type dns_resolver registered
+1793779644.068061 [    1.859132] NET: Registered PF_VSOCK protocol family
+1793779644.071745 [    1.861041] ThumbEE CPU extension supported.
+1793779644.076746 [    1.861106] Registering SWP/SWPB emulation handler
+1793779644.082315 [    1.862127] Loading compiled-in X.509 certificates
+1793779644.085830 [   cc_sd: supplied by vcc_io
+1793779644.091843 [    1.896283] rk_gmac-dwmac ff290000.ethernet: IRQ eth_lpi not found
+1793779644.105733 [    1.896408] rk_gmac-dwmac ff290000.ethernet: Deprecated MDIO bus assumption used545] rk_gmac-dwmac ff29t: PTP uses
+1793779644.112780 [    1.896800] rk_gma90000.ethernput or outp.
+1793779644.136694 [    1.89mac-dwmac ffnet: TX del[    1.8969dwmac ff2900: RX delay(  1.897003]ac ff290000.ntegrated PH[    1.8971dwmac ff2900: cannot getac_speed
+1793779644.155710 81] rk_gmac-000.ethernetut from PHY250] rk_gmac-dwmac ff29et: init for   1.922276]mac ff290000ser ID: 0x1ID: 0x35
+1793779644.161636 9] rk_gmac-00.ethernet
+1793779644.181615 [    1.9ac-dwmac ff2net: DMA HWregister sup   1.922487]mac ff290000RX Checksum ine supporte22592] rk_g290000.etheype 2
+1793779644.188562 [   k_gmac-dwmathernet: TXsertion supported
+1793779644.195693 [    1.922715]ac ff290000.ake-Up On La
+1793779644.201657 [    1.92ac-dwmac ff2net: Normal 
+1793779644.207693 [    1.92ac-dwmac ff2et: Ring mo
+1793779644.215676 [    1.922c-dwmac ff29t: Enable R via HW Wat
+1793779644.224905 [    1.967121] mmc_host mmc0: Bus speed (slot 0) = 50000000Hz (slot req 50000000Hz, actual 50000000HZ div = 0)
+1793779644.230767 [    1.967330] mmc0: new high speed SDHC card at address aaaa
+1793779644.234887 [    1.968313] mmcblk0: mmc0:aaaa SC16G 14.8 GiB 
+1793779644.242746 [    1.978825] GPT:Primary header thinks Alt. header is not at the end of the disk.
+1793779644.246318 [    1.978904] GPT:678975 != 31116287
+1793779644.251833 [    1.978945] GPT:Alternate GPT header not at the end of the disk.
+1793779644.255737 [    1.978996] GPT:678975 != 31116287
+1793779644.260940 [    1.979035] GPT: Use GNU Parted to correct GPT errors.
+1793779644.265877 [    1.979148]  mmcblk0: p1 p2 p3 p4 p5 p6 p7 p8
+1793779644.525849 [    2.392993] input: Generic USB Audio Consumer Control as /devices/platform/ff500000.usb/usb3/3-1/3-1:1.6/0003:0BDA:49F6.0001/input/input0
+1793779644.584774 [    2.453987] input: Generic USB Audio as /devices/platform/ff500000.usb/usb3/3-1/3-1:1.6/0003:0BDA:49F6.0001/input/input1
+1793779644.595735 [    2.454299] hid-generic 0003:0BDA:49F6.0001: input: USB HID v1.11 Device [Generic USB Audio] on usb-ff500000.usb-1/input6
+1793779645.187654 [    3.057056] RTL8211E Gigabit Ethernet stmmac-0:00: attached PHY driver (mii_bus:phy_addr=stmmac-0:00, irq=POLL)
+1793779645.197915 [    3.057159] RTL8211E Gigabit Ethernet stmmac-0:01: attached PHY driver (mii_bus:phy_addr=stmmac-0:01, irq=POLL)
+1793779645.204775 [    3.065154] dwmmc_rockchip ff0d0000.mmc: IDMAC supports 32-bit address mode.
+1793779645.212318 [    3.065367] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779645.217273 [    3.065439] dwmmc_rockchip ff0d0000.mmc: Version ID is 270a
+1793779645.226748 [    3.065553] dwmmc_rockchip ff0d0000.mmc: DW MMC controller at irq 35,32 bit host data width,256 deep fifo
+1793779645.234551 [    3.069448] input: gpio-keys as /devices/platform/gpio-keys/input/input2
+1793779645.237622 [    3.070t disabling unused clocks
+1793779645.245321 [    3.080553] dwmmc_rockchip ff0d0000.mmc: IDMAC supports 32-bit address mode.
+1793779645.251718 [    3.080781] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779645.256812 [    3.080850] dwmmc_rockchip ff0d0000.mmc: Version ID is 270a
+1793779645.266762 [    3.080953] dwmmc_rockchip ff0d0000.mmc: DW MMC controller at irq 35,32 bit host data width,256 deep fifo
+1793779645.276763 [    3.093132] EXT4-fs (mmcblk0p7): mounted filesystem with ordered data mode. Opts: (null). Quota mode: disabled.
+1793779645.282764 [    3.093295] VFS: Mounted root (ext4 filesystem) on device 179:7.
+1793779645.285756 [    3.094112] devtmpfs: mounted
+1793779645.291885 [    3.100245] Freeing unused kernel image (initmem) memory: 2048K
+1793779645.296286 [    3.106314] Run /sbin/init as init process
+1793779645.318735 INIT: version 3.01 booting
+1793779645.678698 [    3.547645] FAT-fs (mmcblk0p6): Volume was not properly unmounted. Some data may bPlease run fsck.
+1793779645.859716 tarting u[    3.734715]  starting ve
+1793779645.875944 [    3.748553] random: udevd: uninitialized urandom read (16 bytes read)
+1793779645.887691 [    3.7503 udevd: uninandom read (16 bytes re3.750578] random: udevd: uninitialized urandom read (16 bytes read)
+1793779645.913347     3.788210] udevd[101]: starting eudev-3.2.10
+1793779646.170874 [    4.044488] rockchip-vop ff930000.vop: Adding to iommu group 0
+1793779646.176769 [    4.045677] rockchip-vop ff940000.vop: Adding to iommu group 1
+1793779646.185979 [    4.058411] dwmmc_rockchip ff0d0000.mmc: IDMAC supports 32-bit address mode.
+1793779646.204822 [    4.075279] rockchip-drm display-subsystem: bound ff930000.vop (ops vop_component_ops [rockchipdrm])
+1793779646.214625 [    4.082240] rockchip-drm display-subsystem: bound ff940000.vop (ops vop_component_ops [rockchipdrm])
+1793779646.223823 [  dwhdmi-rockchip ff980000.hdmi: Detected HDMI TX controller v2.01a with HDCP (DWC HDMI 2.0 TX PHY)
+1793779646.233729 [    4.104105] rockchip-drm display-subsystem: bound ff980000.hdmi (ops dw_hdmi_rockchip_ops [rockchipdrm])
+1793779646.663452 [    4.490412] Console: switching to colour frame buffer device 210x65
+1793779646.739979 [    4.503994] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779646.746580 [    4.504016] dwmmc_rockchip ff0d0000.mmc: Version ID is 270a
+1793779646.755376 [    4.504085] dwmmc_rockchip ffDW MMC controller at irq 35,32 bit host data width,256 deep fifo
+1793779646.762833 [    4.613109] rockchip-drm display-subsystem: [drm] fb0: rockchipdrmfb frame buffer device
+1793779646.770883 [    4.614707] [drm] Initialized rockchip 1.0.0 20140818 for display-subsystem on minor 0
+1793779646.778799 [    4.632306] dwmmc_rockchip ff0d0000.mmc: IDMAC supports 32-bit address mode.
+1793779646.785005 [    4.632662] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779646.790839 [    4.632737] dwmmc_rockchip ff0d0000.mmc: Version ID is 270a
+1793779646.799739 [    4.632843] dwmmc_rockchip ff0d0000.mmc: DW MMC controller at irq 35,32 bit host data width,256 deep fifo
+1793779646.806849 2] usb 1-1: reset high-speed USB device number 2 using dwc2
+1793779647.824812 [    5.697377] EXT4-fs (mmcblk0p7): re-mounted. Opts: (null). Quota mode: disabled.
+1793779648.075884 hwclock: can't open '/dev/misc/rtc': No such file or directory
+1793779648.101143 Fri Mar  9 13:02:21 UTC 2018
+1793779648.125903 hwclock: can't open '/dev/misc/rtc': No such file or directory
+1793779648.851986 [    6.725595] random: dd: uninitialized urandom read (512 bytes read)
+1793779648.912359 INIT: Entering runlevel: 5
+1793779649.089167 Configuring network interfaces... [    6.963610] random: crng init done
+1793779649.094523 [    6.963686] random: 1 urandom warning(s) missed due to ratelimiting
+1793779649.216294 udhcpc: started, v1.35.0
+1793779649.307910 [    7.177354] rk_gmac-dwmac ff290000.ethernet eth0: PHY [stmmac-0:00] driver [RTL8211E Gigabit Ethernet] (irq=POLL)
+1793779649.316364 [    7.178625] rk_gmac-dwmac ff290000.ethernet eth0: Register MEM_TYPE_PAGE_POOL RxQ-0
+1793779649.322754 [    7.181687] rk_gmac-dwmac ff290000.ethernet eth0: No Safety Features support found
+1793779649.330353 [    7.181789] rk_gmac-dwmac ff290000.ethernet eth0: PTP not supported by HW
+1793779649.338348 [    7.182614] rk_gmac-dwmac ff290000.ethernet eth0: configuring for phy/rgmii link mode
+1793779649.340845 udhcpc: broadcasting discover
+1793779652.321915 udhcpc: broadcasting discover
+1793779653.494242 [   11.364933] rk_gmac-dwmac ff290000.ethernet eth0: Link is Up - 1Gbps/Full - flow control off
+1793779653.499812 [   11.365091] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+1793779655.325293 dcasting discover
+1793779655.841994 udhcpc: broadcasting select for 192.168.88.110, server 192.168.88.1
+1793779655.848987 udhcpc: lease of 192.168.88.110 obtained from 192.168.88.1, lease time 600
+1793779655.927531 /etc/udhcpc.d/50default: Adding DNS 8.8.8.8
+1793779655.964914 done.
+1793779655.985971 Starting hardware watchdog keep-alive (/dev/watchdog, every 5s)
+1793779656.055053 Starting Dropbear SSH server: dropbear.
+1793779656.099476 hwclock: can't open '/dev/misc/rtc': No such file or directory
+1793779656.160260 Starting syslogd/klogd: done
+1793779656.196366 Setting up bridge xenbr0 (192.168.100.1/24)
+1793779657.428745 Starting /usr/sbin/xenstored...
+1793779657.463517 Setting domain 0 name, domiconfig...
+1793779657.610170 Done setting up Dom0
+1793779657.613936 Starting xenconsoled...
+1793779657.635003 Starting QEMU as disk backend for dom0
+1793779658.363640 Starting usb-share (USB/IP, classes 0e 01)
+1793779658.431096 [   16.304790] usbcore: registered new device driver usbip-host
+1793779658.652296 Starting Xen guest rtos1
+1793779658.852279 (XEN) Removing cpu 3 from runqueue 0
+1793779658.901320 [   16.773874] usbip-host 3-1: usbip-host: register new device (bus 3 dev 2)
+1793779658.910096 [   16.782753] dwmmc_rockchip ff0d0000.mmc: IDMAC supports 32-bit address mode.
+1793779658.916988 [   16.783202] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779658.923476 [   16.783295] dwmmc_rockchip ff0d0000.mmc: Version ID is 270a
+1793779658.931999 [   16.783rockchip ff0d0000.mmc: DW MMC controller at irq 35,32 bit host data width,256 deep fifo
+1793779658.954623  Initializing RTDS scheduler
+1793779658.959079 (XEN) WARNING: This is experimental software in development.
+1793779658.961982 (XEN) Use at your own risk.
+1793779659.017969 Parsing config from /etc/xen/rtos1.cfg
+1793779659.162276 (XEN) memory_map:add: dom1 gfn=ff130 mfn=ff130 nr=1
+1793779659.167514 (XEN) memory_map:add: dom1 gfn=ff7c0 mfn=ff7c0 nr=1
+1793779659.432449 Starting Xen guest media1
+1793779659.571913 Parsing config from /etc/xen/media1.cfg
+1793779660.716361 [   18.588597] dwmmc_rockchip ff0d0000.mmc: IDMAC supports 32-bit address mode.
+1793779660.723790 [   18.589488] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779660.728293 [   18.589582] dwmmc_rockchip f: Version ID is 270a
+1793779660.738501 [   18.589711] dwmmc_rockchip ff0d0000.mmc: DW MMC controller at irq 35,32 bit host data width,256 deep fifo
+1793779662.205313 [   20.077532] dwmmc_rockchip ff0d0000.mmc: IDMAC supports 32-bit address mode.
+1793779662.212302 [   20.078995] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779662.217364 [   20.079096] dwmmc_rockchip ff0d0000.mmc: Version ID is 270a
+1793779662.227287 [   20.079221] dwmmc_rockchip ff0d0000.mmc: DW MMC controller at irq 35,32 bit host data width,256 deep fifo
+1793779662.632117 [   20.506208] xenbr0: port 1(vif2.0) entered blocking state
+1793779662.638130 [   20.506309] xenbr0: port 1(vif2.0) entered disabled state
+1793779662.642083 [   20.506656] device vif2.0 entered promiscuous mode
+1793779662.957188 Starting media-link to 192.168.100.4
+1793779663.101434 [   20.975566] vcan: Virtual CAN interface driver
+1793779663.269252 Starting vehicle bench on lated vehicle)
+1793779663.428381 Starting display-map: hdmi=vnc:5901
+1793779663.714146 
+1793779663.992152 root@tinker-board:~# (XEN) d2v0 Unhandled SMC/HVC: 0x8600ff01
+1793779664.020110 (XEN) d2v0: vGICD: unhandled word write 0xffffffff to ICACTIVER0
+1793779664.079123 (XEN) d2v1: vGICD: unhandled word write 0xffffffff to ICACTIVER0
+1793779664.497354 [   22.367576] xen-blkback: backend/vbd/2/51712: using 1 queues, protocol 1 (arm-abi) persistent grants
+1793779664.679343 [   22.554313] vif vif-2-0 vif2.0: Guest Rx ready
+1793779664.686388 [   22.554445] IPv6: ADDRCONF(NETDEV_CHANGE): vif2.0: link becomes ready
+1793779664.691099 [   22.554707] xenbr0: port 1(vif2.0) entered blocking state
+1793779664.698559 [   22.554788] xenbr0: port 1(vif2.0) entered forwarding state
+1793779667.950526 [   25.824205] xenbr0: port 1(vif2.0) entered disabled state
+1793779667.964112 [   25.838090] xenbr0: port 1(vif2.0) entered disabled state
+1793779667.969487 [   25.838481] device vif2.0 left promiscuous mode
+1793779667.974093 [   25.838561] xenbr0: port 1(vif2.0) entered disabled state
+1793779673.271253 [   31.143977] dwmmc_roc00.mmc: IDMAC supports ess mode.
+1793779673.278311 [   31.144485] dwmmc_rockchip ff0d0000.mmc: Using internal DMA controller.
+1793779673.284397 [   31.144579] dwmmc_rockchip ff0d0000n ID is 270a
+1793779674.939205 [   31.1c_rockchip f: DW MMC conirq 35,32 bi width,256 d[219] dwmmc_rockchip ff0d0000.mmc: ts 32-bit address mode.6006] dwmmc0d0000.mmc: Using intertroller.
+1793779674.945294 [7] dwmmc_roc000.mmc: Ver70a
+1793779675.444266 [   3wmmc_rockchimc: DW MMC controller a bit host da6 deep fifo[   33.312978] xenbr0: p) entered blocking stat313074] xenbvif3.0) ented state
+1793779675.449251 [  device vif3.0 entered mode
+1793779676.724443 (XEN) d3v0 Unhandled SMC/HVC: 0x8600ff01
+1793779676.752722 (XEN) d3v0: vGICD: unhandled word write 0xffffffff to ICACTIVER0
+1793779676.810437 (XEN) d3v1: vGICD: unhandled word write 0xffffffff to ICACTIVER0
+1793779677.259508 [   35.129084] xen-blkback: backend/vbd/3/51712: using 1 queues, protocol 1 (arm-abi) persistent grants
+1793779677.435682 [   35.309303] vif vif-3-0 vif3.0: Guest Rx ready
+1793779677.441342 [   35.309454] IPv6: ADDRCONF(NETDEV_CHANGE): vif3.0: link becomes ready
+1793779677.446491 [   35.300: port 1(vif3.0) enterstate
+1793779677.452466 [  xenbr0: portentered forwarding state
+1793779682.507772 [   40.381804] usbip-host 3-1: stub up
+1793779683.573799 [   41.447286] usbip-host 3-1: endpoint 0 is stalled
+1793779684.147415 [   42.020345] usbip-host 3-1: usb_set_interface done: inf 1 alt 0
+1793779684.163534 [   42.036881] usbip-host 3-1: usb_set_interface done: inf 1 alt 1
+1793779684.198823 [   42.070880] usbip-host 3-1: usb_set_interface done: inf 1 alt 0
+1793779684.203813 [   42.074246] usbip-host 3-1: usb_set_interface done: inf 2 alt 0
+1793779684.217847 [   42.090756] usbip-host 3-1: usb_set_interface done: inf 2 alt 1
+1793779684.227560 [   42.100707] usbip-host 3-1: usb_set_interface done: inf 2 alt 0
+1793779684.243474 [   42.116862] usbip-host 3-1: usb_set_interface done: inf 2 alt 2
+1793779684.271463 [   42.127204] usbip-ace done: inf 2 alt 0[   42.143981] usbip-host 3-1: usb_set_interface done: inf 2 alt 3
+1793779684.289132 [   42.161868] usbip-host 3-1: usb_set_interface done: inf 2 alt 0
+1793779684.304484 [   42.178035] usbip-host 3-1: usb_set_interface done: inf 2 alt 4
+1793779684.319446 [   42.192104] usbip-host 3-1: usb_set_interface done: inf 2 alt 0
+1793779684.324562 [   42.195605] usbip-host 3-1: usb_set_interface done: inf 3 alt 0
+1793779684.363480 [   42.217358] usbip-host 3-1: usb_set_interface done: inf 3 alt [   42.236468] usbip-host 3-1: usb_set_interface done: inf 3 alt 0
+1793779684.369468 [   42.239705] usbip-host 3-1: usb_set_interface done: inf 4 alt 0
+1793779684.391477 [   sbip-host 3-1: usb_set_interface done: inf 4 alt 1
+1793779684.403476 [   42.276841] usbip-host 3-1: usb_set_interface done: inf 4 alt 0
+1793779684.428584 [ 3-1: usb_set_interface done: inf 4 alt 2
+1793779684.440532 [   42.313366] usbip-host 3-1: usb_set_interface done: inf 4 alt 0
+1793779684.465572 [   42.338317] usbip-host 3-1: usb_set_interface done: inf 4 alt 3
+1793779684.475798 [   42.348243] usbip-host 3-1: usb_set_interface done: inf 4 alt 0
+1793779684.499473 [   42.372824] usbip-host 3-1: usb_set_interface done: inf 4 alt 4
+1793779684.510497 [   42.383372] usbip-host 3-1: usb_set_interface done: inf 4 alt 0
+1793779684.535856 [   42.408818] usbip-host 3-1: usb_set_interface done: inf 4 alt 5
+1793779684.547481 [   42.420188] usbip-host 3-1: usb_set_interface done: inf 4 alt 0
+1793779684.576538 ] usbip-host 3-1: usb_set_interface done: inf 4 alt 6
+1793779684.612603 [   42.460197] usbip-host 3-1: usb_set_interface done: inf 4 alt 0[   42.485344] usbip-host 3-1: usb_set_interface done: inf 4 alt 7
+1793779684.629449 [   42.501346] usbip-host 3-1: usb_set_interface done: inf 4 alt 0
+1793779684.653520 [   42.526227] usbip-b_set_interface done: inf 4 alt 8
+1793779684.663522 [   42.536441] usbip-host 3-1: usb_set_interface done: inf 4 alt 0
+1793779684.718499 [   42.538949] usbip-host 3-1: usb_set_interface done: inf 5 alt [   42.591165] usbip-host 3-1: usb_set_interface done: inf 5 alt 1
+1793779684.730469 [   42.603333] usbip-host 3-1: usb_set_interface done: inf 5 alt 0
+1793779684.783537    42.656316] usbip-host 3-1: usb_set_interface done: inf 5 alt 2
+1793779684.793616 [   42.666440] usbip-host 3-1: usb_set_interface done: inf 5 alt 0
+1793779684.845569 [   42.718870] usbip-host 3-1: usb_set_interface alt 3
+1793779684.860468 [  usbip-host 3-1: usb_set_interface done: inf 5 alt 0
+1793779684.923415  42.785842] usbip-host 3-1: usb_set_interface done: inf 5 [6323] usbip-host 3-1: usb_set_interface done: inf 5 alt 0
+1793779684.948570    42.812934] usbip-hostint 0 is stal2.815058] u1: endpoint 0 is stall817793] usbi endpoint 0 is stalled
+1793779684.952549 [   42.819919] usbip-host 3-1: endpoint 0 is stalled
+1793779684.957478 [   42.822041] usbip-hosint 0 is stalled
+1793779684.962510 [   42.823790] usbip-host 3t 0 is stalled
+1793779684.968406 [   42.826168] usbip-host 3-1: endpoint 0 is stalled
+1793779684.971577 [   42.82host 3-1: endpoint 0 is stalled
+1793779684.976366 [   42.829911] usbip-host 3-1: endpoint 0 is stalled
+1793779684.981535 [   42.831918] usbip-host 3-1: endpoint 0 is stalled
+1793779684.993554 [   42.868033] usbip-host 3-1: endpoint 0 is stalled
+1793779684.998536 [   42.869905] usbip-host 3-1: endpoint 0 is stalled
+1793779685.003470 [   42.871907] usbip-host 3-1: endpoint 0 is stalled
+1793779685.007578 [   42.873633] usbip-host 3-1: e stalled
+1793779685.013112 11] usbip-host 3-1: endpoint 0 is stalled
+1793779685.017582 [   42.877533] usbip-host 3-1: endpoint 0 is stalled
+1793779685.022525 [   42.879408] usbip-host 3-1: endpoint 0 is stalled
+1793779685.027559 [   42.881168] usbip-host 3-1: endpoint 0 is stalled
+1793779685.031563 [   42.887453] usbip-host 3-1: endpoint 0 is stalled
+1793779685.037183 [   42.890297] usbip-host 3-1: endpoint 0 is stalled
+1793779685.041545 [   42.915032] usbip-host 3-1: endpoint 0 is stalled
+1793779685.050524 [   42.916909] usbip-host 3-1: endpoint 0 is stalled657] usbip-host 3-1: en stalled
+1793779685.055491 [   42.920432] usbip-host 3-1: endpoint 0 is stalled
+1793779685.060566 [   42.922787] usbip-host 3-1: endpoint 0 is stalled
+1793779685.065597 [   42.930046] usbip-host 3-1: endpoint 0
+1793779685.069788 [   42.93ndpoint 0 is stalled
+1793779685.074843 6] usbip-host 3-1: endpoint 0 is stalled
+1793779685.079485 [   42.939302] usbip-host 3-1: endpoint 0 is stalled
+1793779685.084503 [   42.941297] usbip-host 3-1: endpoint 0 is stalled
+1793779685.090443 [   42.961160] usbip-host 3-1: endpoint 0 is stalled
+1793779685.093465 [   42.962906] usbip-host 3-1: endpoint 0 is stalled
+1793779685.098462 [ ] usbip-host 3-1: endpoint 0 is stalled
+1793779685.103600 [   42.970063] usbip-host 3-1: endpoint 0 is stalled
+1793779685.108544 [   42.972555] usbip-host 3-1: endpoint 0 is stalled
+1793779685.112415 [   42.975307] usbip-host 3-1: endpoint 0 is stalled
+1793779685.117657 [   42.980295] usbip-host 3-1: endpoint 0 is stalled
+1793779685.122468 [   42.982787] usbip-host 3-1: endpoint 0 is stalled
+1793779685.127591 [   42.984911] usbip-host 3-1: endpoint 0 is stalled
+1793779685.131600 [   42.986658] usbip-host 3-1: endpoint 0 is stalled
+1793779685.136768 [   43.006672] usbip-host 3-1: endpoint 0 is stalled
+1793779685.141891 [   43.008800] usbip-host 3-1: endpoint 0 is stalled
+1793779685.146435 [   43.011075] usbip-host 3-1: endpoint 0 is stalled
+1793779685.150477 [   43.013685] usbip-host 3-1: endpoint 0 is stalled
+1793779685.155572 [   43.016295] usbip-host 3-1: endpoint 0 is stalled
+1793779685.160550 [   43.021812] usbip-host 3-1: endpoint 0 is stalled
+1793779685.165613 [   43.023922] usbip-host 3-1: endpoint 0 is stalled
+1793779685.170557 [   43.026309] usbip-host 3-1: endpoint 0 is stalled
+1793779685.174546 [   43.0281ost 3-1: endstalled
+1793779685.179674 [   43.030170] usbip-host 3-1: endpoint 0 is stalled
+1793779685.545811 [   43.397105] usbip-host 3-1: usb_set_interface done: in[   43.419082] usbip-host 3-1: usb_set_interface done: inf 4 alt 3

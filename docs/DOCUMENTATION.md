@@ -152,7 +152,7 @@ Tinker Board RK3288 project
     ├── Step 45  ✓ Full restart: both guests start and log in by themselves; image rebuilt
     ├── Step 46  ✗ No video after a power cut (media1 init misreads at cold start)
     │            → xen-guests checks media1 and restarts it automatically
-    └── Step 47  Rear camera and sound move into media1 (USB/IP from dom0) – built, board test not recorded
+    └── Step 47  Rear camera and sound move into media1 (USB/IP from dom0) – codec attach seen, camera/sound untested
 
 Finished (Part 5): Xen → dom0 (Yocto) + FreeRTOS (real-time) + Android, on 4 cores
 Part 6:            + media1 (Yocto media), a screen per OS, Android 10 started
@@ -1267,7 +1267,7 @@ You flashed the card and connected an 800x480 HDMI display. What we found:
 ## Chapter 10a – Part 7 – Three guests: the HDMI fix and FreeRTOS's own screen
 
 *2026-10-31 to 2026-11-04. Steps 41–46 were tested on the board; Step 47 is built into the current
-image, but no board test of it is recorded yet.*
+image and only partly tested (the sound chip is handed to media1; camera and sound output untested).*
 
 ### Step 41 – Back to three operating systems
 
@@ -1499,8 +1499,9 @@ real USB controller and lends the devices to media1 over the virtual network (xe
 The pretend car no longer backs up by itself every minute (`SIM_REVERSE=0`). Test the camera with
 `/etc/init.d/vehicle-bench reverse` (run it again to release).
 
-**Status:** built into image `20261104074956`. There is no board test of the camera and sound over
-USB/IP in the logs yet.
+**Status:** built into image `20261104074956`. The boot log of 2026-11-04 shows the first part
+working: dom0 exported the sound chip and media1 took it (`usbip-host 3-1: stub up`, Part 2 5.6).
+The camera picture and the sound on the jack are not tested yet (no webcam was plugged in).
 
 ---
 
@@ -1618,6 +1619,31 @@ If Xen can't start, the script automatically starts plain Linux instead, so you'
   (Step 46); `xen-guests` notices and starts it again.
 - **Shutdown runs in reverse.** On `poweroff`, `xen-guests` stops media1, then rtos1, and dom0
   switches off last.
+
+### Watching it boot: the real log
+
+We recorded a real restart over the serial cable, with the time of every line
+(`diagnostics/uart-boot-timed-20261104.log`). This is where the 42 seconds to the dom0 prompt go:
+
+```
+  0 s ──┬── U-Boot starts ................................. 0.7 s
+        ├── U-Boot looks for USB devices .................. 10.7 s  ← the longest wait
+        ├── "Hit any key" countdown ....................... 2 s
+        ├── loads boot.scr, Xen, Linux, board description . 0.9 s
+ 17 s ──┼── Xen starts, switches on 4 cores, prepares dom0  3.3 s
+ 20 s ──┼── dom0's Linux starts, finds the SD card ........ 3.5 s
+ 24 s ──┼── dom0's start-up scripts ....................... 3.6 s
+ 28 s ──┼── dom0 asks the router for an address (DHCP) .... 6.9 s  ← second-longest wait
+ 35 s ──┼── watchdog, network bridge, Xen helpers, USB sharing
+ 37 s ──┼── rtos1 starts on core 3 (its TFT shows ~1 s later)
+ 38 s ──┼── media1 starts
+ 43 s ──┴── dom0 prompt: root@tinker-board:~#
+ 46 s       media1's start went wrong (Step 46) → xen-guests restarts it
+ 61 s       media1 is ready, takes the sound chip from dom0 (USB/IP) → video on HDMI
+```
+
+The full picture (who loads whom, in which CPU mode, from which partition), the timeline of every
+domain, the real log lines and how to record a log yourself are in Part 2, section 5.6.
 
 ### How the car data flows
 
@@ -1791,7 +1817,7 @@ and how big"). The TFT shows FreeRTOS's dashboard after about 38 seconds.
 
 Plug in **before** switching on: the HDMI monitor (on the board's HDMI port), the USB webcam, and
 headphones or a speaker in the 3.5 mm jack. The camera and the sound go to media1 over USB/IP
-(Step 47); there is no board test of this path in the logs yet.
+(Step 47); so far only the hand-over of the sound chip is confirmed on the board.
 
 | Test | Command (on the board, dom0) | What you should see / hear |
 |---|---|---|
@@ -2038,8 +2064,9 @@ program to a real car.**
 
 ### Not working, or not tested yet
 
-- **Rear camera and sound over USB/IP (Step 47) have no board test in the logs yet.** They are in the
-  current image. The webcam must offer the YUYV format (most do).
+- **Rear camera and sound over USB/IP (Step 47) are only partly tested.** The boot log shows media1
+  taking the sound chip from dom0; the camera picture and the sound on the jack are untested. The
+  webcam must offer the YUYV format (most do).
 - **media1 start-up after a power cut (Step 46):** media1's disk reads are often corrupted in the
   first seconds after a cold start (different programs break each time). `xen-guests` detects it and
   restarts media1 automatically, so the video takes about 60 s instead of about 50 s to appear. The
@@ -2048,8 +2075,9 @@ program to a real car.**
   alone, restart rtos1 (Step 44). FreeRTOS only sends to the panel, so it can't tell when the
   panel is missing.
 - **USB displays** (`display-map` with `udl`, only DisplayLink DL-1x0/1x5) are not tested.
-- **Not tested, because the equipment is missing:** internet for the guests (no Ethernet cable),
-  the ignition wire, a real CAN adapter.
+- **Not tested yet:** internet for the guests (dom0 has had Ethernet since 2026-11-04 – it got
+  192.168.88.110 by DHCP – but a guest ping to the internet wasn't tried). Missing equipment: the
+  ignition wire, a real CAN adapter.
 - **Not for a real car's controls.** This is a test bench and a listen-only monitor. It isn't
   certified for safety (ISO 26262) and must never control anything in a car.
 - **The car data travels through Linux** on its way to FreeRTOS, so delivery can lag by up to about
@@ -2253,11 +2281,11 @@ describe it as history.
 | FreeRTOS ILI9341 TFT dashboard (SPI2, 8.25 MHz) | ✅ tested (2026-11-04, after rewiring) |
 | media1 video on HDMI, no QEMU placeholder after a media1 restart | ✅ tested (2026-11-04) |
 | media1 start check (crash markers, login prompt, ping; up to 3 restarts) | ✅ tested (2026-11-04) |
-| Guest network 192.168.100.0/24, NAT rule in dom0 | ✅ tested (internet itself untested: no Ethernet) |
+| Guest network 192.168.100.0/24, NAT rule in dom0 | ✅ tested (guest internet not tried yet; dom0 has Ethernet since 2026-11-04) |
 | Temperatures (CPU/GPU) and hardware over-temperature shutdown | ✅ tested |
 | Automotive bench: simulated CAN → FreeRTOS, 0 lost frames, gaps ≤ 35 ms | ✅ tested |
 | Overspeed, redline and signal-loss alerts in FreeRTOS | ✅ tested |
-| Rear camera and sound in media1 over USB/IP (`usb-share`, `usb-attach`, `media-link`) | ⏳ built into the current image, no board test recorded |
+| Rear camera and sound in media1 over USB/IP (`usb-share`, `usb-attach`, `media-link`) | ⏳ codec export + attach seen in the boot log (5.6); camera picture and sound output untested |
 | Instrument-cluster dashboard on HDMI (`SCREENS="hdmi=cluster"`) | ✅ tested on a RAM framebuffer; not the default screen |
 | USB displays (udl) | ⏳ built, no adapter tested |
 | Ignition (ACC) power-off service | ⏳ built, disabled, needs wiring |
@@ -2320,6 +2348,7 @@ FreeRTOS reports (from `xl console rtos1` or `/var/log/xen/console/guest-rtos1.l
 ### 2.5 Measured boot time and resources (2026-11-04)
 
 Image `20261104074956`, board running dom0 + rtos1 + media1 with media1 playing the default clip.
+The boot log itself, with the boot architecture and a per-phase timeline, is in 5.6.
 
 **Method.** Boot: `reboot` in dom0 while arjune timestamped every UART line (`$EPOCHREALTIME`, t = 0
 at the first U-Boot TPL line); media1 milestones from `/var/log/boot` and `/var/log/xen-guests.log`
@@ -2608,6 +2637,197 @@ Safety principle: nothing in this system ever transmits on a vehicle bus. `can2r
 `media-link` only receive; a real interface is configured `listen-only on`, so the controller does
 not even send ACK bits. The simulated drive cycle only includes a reverse phase with
 `SIM_REVERSE=1` (default 0); `/etc/init.d/vehicle-bench reverse` holds reverse by hand.
+
+### 5.6 Boot in detail: architecture, workflow and the real log
+
+Source: a UART capture of a `reboot` of image `20261104074956` on 2026-11-04 13:38, every line
+timestamped on arjune: `diagnostics/uart-boot-timed-20261104.log` (raw: epoch seconds + text).
+Times below are seconds after the first `U-Boot TPL` line; print them with
+`diagnostics/uart-boot-capture.sh --rel diagnostics/uart-boot-timed-20261104.log`. Xen, dom0 and
+the guests share one UART, so some lines in the file are interleaved or cut. The measured
+resources (RAM, CPU, storage per OS) for the same boot are in 2.5.
+
+#### 5.6.1 Boot architecture (who loads whom, from where, in which CPU mode)
+
+```
+  SD card (GPT)                      RAM (2 GiB)                     CPU mode / owner
+ ───────────────────────────────    ─────────────────────────────    ───────────────────────────
+  boot ROM (inside RK3288) ──────►  SRAM                             secure SVC, CPU 0 only
+     │ reads sector 64
+  p1 loader1  TPL (DDR init) ────►  SRAM → DDR up                    secure SVC
+              SPL ───────────────►  loads U-Boot from p4
+  p4 loader2  U-Boot 2022.01 ────►  top of DDR (0x79e00000–0x7fffffff, kept by fdt rsvmem)
+     │ distro boot: mmc 1:6, no extlinux.conf → /boot.scr
+  p6 boot     /boot.scr ─────────►  ${scriptaddr}
+              /rk3288-tinker.dtb ►  ${fdt_addr_r} 0x01f00000  (edited: DMAC, rsvmem, thermal, /chosen)
+              /xen ──────────────►  0x02000000
+              /zImage ───────────►  0x04000000  (= /chosen/module@4000000, dom0 kernel)
+     │ bootz: armv7 nonsec switch, PSCI monitor installed in the reserved area
+     ▼                                                              non-secure HYP (EL2)
+  Xen 4.16.1 ─ PSCI CPU_ON ×3 ─► CPUs 1–3 up; credit2 on CPUs 0–3; allocates 320 MB to dom0
+     │ builds dom0 from module@4000000 + DTB
+     ▼                                                              non-secure SVC, 1 vCPU
+  dom0 Linux 5.15 ── mounts p7 root ─► SysVinit rcS (udev, remount) → rc5.d S05…S94
+     │ S90 xen-guests
+     ├─► rtos1-start: CPU 3 → cpupool rt (RTDS); rtos1-hwprep (CRU/GRF via /dev/mem);
+     │     xl create rtos1 (4 MB at 0x40000000, kernel /var/lib/xen/rtos1/freertos-xen-guest.bin
+     │     from p7; iomem SPI2 0xff130000 + GPIO5 0xff7c0000 1:1); budget 1000/1000 µs
+     └─► e2fsck -p p8; xl create media1 (192 MB, 2 vCPUs on 0–2, kernel = dom0's /boot/zImage,
+           root xvda = p8 media-root via blkback, vif on xenbr0, vfb via QEMU :5901)
+           → start check (login prompt + ping 192.168.100.4 within 45 s, else destroy + create)
+```
+
+#### 5.6.2 Boot workflow (timeline of the captured boot)
+
+```
+ t (s)   boot ROM/U-Boot        Xen                 dom0                       rtos1 (CPU 3)   media1
+ ─────── ────────────────────── ─────────────────── ────────────────────────── ─────────────── ─────────────────────
+  0.00   TPL → SPL (0.25)
+  0.67   U-Boot, Reset cause RST
+  3.55   usb start ……… 10.7 s
+ 14.30   USB scan done
+ 16.30   autoboot countdown end
+ 16.58   /boot.scr, load dtb,
+         xen, zImage (0.6 s)
+ 17.19   "Starting kernel"  ──► 17.53 Xen 4.16.1
+                                17.71 4 CPUs (PSCI)
+                                17.78 dom0 320 MB …
+                                19.40 input → DOM0
+                                                    20.45 Booting Linux
+                                                    22.91 mmcblk0 p1…p8
+                                                    23.94 /sbin/init
+                                                    27.56 runlevel 5
+                                                    27.74 eth0 DHCP …… 6.9 s
+                                                    34.63 S05 hw-watchdog
+                                                    34.84 S79 xenbr0
+                                                    36.08 S80 xenstored, xenconsoled
+                                                    37.01 S89 usb-share
+                                37.50 CPU 3 out of  37.30 S90 rtos1-start ───► 37.81 iomem
+                                      Pool-0, RTDS                              mapped, ≈38  
+                                      pool "rt"                                 TFT dashboard
+                                                    38.08 S90 media1 ─────────────────────────► domain 2 boots
+                                                    41.60 S91 media-link
+                                                    41.92 S92 vehicle-bench
+                                                    42.07 S93 display-map
+                                                    42.64 root@tinker-board:~#
+                                                                                                ≈46 start broken
+                                                    46.60 vif2.0 down ◄─── start check ─────── (udevd signal 11)
+                                                    54.10 vif3.0 up ──────────────────────────► domain 3 boots
+                                                    61.15 usbip-host 3-1 "stub up" ◄────────── usb-attach takes
+                                                          (codec 0bda:49f6)                     the sound codec
+                                                                                                ≈61 started properly
+                                                                                                → video on HDMI
+```
+
+Where the time goes:
+
+| Phase | From → to (s) | Duration | Note |
+|---|---|---|---|
+| boot ROM, TPL, SPL | 0 → 0.67 | 0.7 s | |
+| U-Boot init (DRAM, PMIC, MMC, Ethernet) | 0.67 → 3.55 | 2.9 s | |
+| U-Boot USB scan (`usb@ff540000`, `usb@ff580000`) | 3.55 → 14.30 | **10.7 s** | largest single item; why U-Boot starts USB was not investigated |
+| autoboot countdown | 14.30 → 16.30 | 2.0 s | `bootdelay` 2 |
+| load boot.scr, dtb, Xen (917560 B, 43 ms), zImage (10453504 B, 460 ms) | 16.30 → 17.19 | 0.9 s | |
+| Xen start, 4 CPUs, build dom0 (320 MB) | 17.19 → 20.45 | 3.3 s | dom0 memory set-up ≈ 1.6 s |
+| dom0 kernel to `/sbin/init` | 20.45 → 23.94 | 3.5 s | |
+| rcS: udev, DRM/HDMI, remount | 23.94 → 27.56 | 3.6 s | |
+| networking: DHCP on eth0 | 27.74 → 34.61 | **6.9 s** | the lease (192.168.88.110) came after the link went up at 32.1 s |
+| dom0 services up to the guests | 34.63 → 37.30 | 2.7 s | |
+| guests, media-link, bench, display-map, autologin | 37.30 → 42.64 | 5.3 s | |
+| media1 to ready (clean start) | 38.08 → ≈ 53 | ≈ 15 s | from `xen-guests.log` (2.5) |
+| media1 to ready with one restart (this boot) | 38.08 → ≈ 61 | ≈ 23 s | cold-boot read fault, 9.12.5 |
+
+The two biggest waits, the U-Boot USB scan (10.7 s) and DHCP (6.9 s), are leads for a faster
+boot; neither has been changed.
+
+The same capture is also the first board evidence for 9.13: after media1's restart, dom0's
+`usbip-host` reports `3-1: stub up` (61.15 s) for the onboard codec `0bda:49f6` and media1 sets
+its audio interfaces. No webcam was plugged in, and nobody listened to the jack, so the camera
+picture and the sound output are still untested.
+
+#### 5.6.3 Key lines of the real log
+
+Cleaned up: where the shared UART dropped or interleaved characters, the text is completed from
+the same message in earlier clean boots (`uart-xen-*.log`) and long lines are shortened. The raw
+file has every line as captured.
+
+```
+  0.00 U-Boot TPL 2022.01 (Jan 10 2022 - 18:46:34 +0000)
+  0.25 U-Boot SPL 2022.01 (Jan 10 2022 - 18:46:34 +0000)
+  0.67 U-Boot 2022.01 (Jan 10 2022 - 18:46:34 +0000)
+  0.67 SoC: Rockchip rk3288
+  0.67 Reset cause: RST
+  0.67 DRAM:  2 GiB
+  3.55 starting USB... Bus usb@ff540000: USB DWC2
+ 14.30 scanning usb for storage devices... 0 Storage Device(s) found
+ 16.30 Hit any key to stop autoboot:  2  1  0
+ 16.57 Scanning mmc 1:6...
+ 16.58 Found U-Boot script /boot.scr
+ 16.61 40884 bytes read in 4 ms (9.7 MiB/s)              rk3288-tinker.dtb
+ 16.66 917560 bytes read in 43 ms (20.3 MiB/s)           xen
+ 17.14 10453504 bytes read in 460 ms (21.7 MiB/s)        zImage
+ 17.19 Starting kernel ...
+ 17.53 (XEN) Xen version 4.16.1 ... git:f265444922
+ 17.54 (XEN) Processor: 410fc0d1: "ARM Limited" ...                  Cortex-A17 (Xen patch 0001)
+ 17.58 (XEN) Using PSCI v1.0
+ 17.71 (XEN) Brought up 4 CPUs
+ 17.77 (XEN) *** LOADING DOMAIN 0 ***
+ 17.78 (XEN) Allocating mappings totalling 320MB for dom0:
+ 19.40 (XEN) *** Serial input to DOM0 (type 'CTRL-a' three times to switch input)
+ 20.45 [    0.000000] Booting Linux on physical CPU 0x0
+ 20.51 [    0.000000] Xen 4.16 support found
+ 22.88 [    1.968313] mmcblk0: mmc0:aaaa SC16G 14.8 GiB
+ 22.91 [    1.979148]  mmcblk0: p1 p2 p3 p4 p5 p6 p7 p8
+ 23.92 [    3.093132] EXT4-fs (mmcblk0p7): mounted filesystem with ordered data mode.
+ 23.94 [    3.106314] Run /sbin/init as init process
+ 25.42 [    4.614707] [drm] Initialized rockchip 1.0.0 20140818 for display-subsystem on minor 0
+ 27.56 INIT: Entering runlevel: 5
+ 27.74 Configuring network interfaces...
+ 32.14 [   11.364933] rk_gmac-dwmac ff290000.ethernet eth0: Link is Up - 1Gbps/Full
+ 34.50 udhcpc: lease of 192.168.88.110 obtained from 192.168.88.1, lease time 600
+ 34.63 Starting hardware watchdog keep-alive (/dev/watchdog, every 5s)
+ 34.84 Setting up bridge xenbr0 (192.168.100.1/24)
+ 36.08 Starting /usr/sbin/xenstored...
+ 36.26 Starting xenconsoled...
+ 37.01 Starting usb-share (USB/IP, classes 0e 01)
+ 37.30 Starting Xen guest rtos1
+ 37.50 (XEN) Removing cpu 3 from runqueue 0
+ 37.60 (XEN) Initializing RTDS scheduler
+ 37.81 (XEN) memory_map:add: dom1 gfn=ff130 mfn=ff130 nr=1        SPI2 for the TFT
+ 37.81 (XEN) memory_map:add: dom1 gfn=ff7c0 mfn=ff7c0 nr=1        GPIO5
+ 38.08 Starting Xen guest media1
+ 41.28 [   20.506208] xenbr0: port 1(vif2.0) entered blocking state
+ 41.60 Starting media-link to 192.168.100.4
+ 42.07 Starting display-map: hdmi=vnc:5901
+ 42.64 root@tinker-board:~#
+ 43.14 [   22.367576] xen-blkback: backend/vbd/2/51712: using 1 queues, protocol 1 (arm-abi) persistent grants
+ 46.60 [   25.824205] xenbr0: port 1(vif2.0) entered disabled state        media1 destroyed by the start check
+ 54.10 [   33.313074] xenbr0: port 1(vif3.0) entered blocking state        media1 created again (domain 3)
+ 55.91 [   35.129084] xen-blkback: backend/vbd/3/51712: using 1 queues, protocol 1 (arm-abi) persistent grants
+ 61.15 [   40.381804] usbip-host 3-1: stub up                              media1 attached the sound codec
+```
+
+Harmless lines in the log: `FAT-fs (mmcblk0p6): Volume was not properly unmounted` (the boot
+partition after a reset), `hwclock: can't open '/dev/misc/rtc'` (no RTC driver in dom0),
+`(XEN) d2v0 Unhandled SMC/HVC: 0x8600ff01` and `vGICD: unhandled word write ... ICACTIVER0` (Linux
+guests probing firmware/GIC features Xen doesn't offer), and many `usbip-host 3-1: endpoint 0 is
+stalled` lines while snd-usb-audio in media1 probes the codec.
+
+#### 5.6.4 Capturing a boot log yourself
+
+On the PC that has the serial adapter (arjune), with picocom closed:
+
+```
+cd ~/xen-hypervisor/diagnostics
+./uart-boot-capture.sh 120 > uart-boot-$(date +%Y%m%d-%H%M).log &     # 120 s, /dev/ttyUSB0
+ssh root@192.168.88.110 reboot                                          # or switch the board on
+wait
+./uart-boot-capture.sh --rel uart-boot-*.log | less                     # times after reset
+```
+
+After the boot, the matching guest-side logs are on the board: `xl dmesg`, `/var/log/boot`,
+`/var/log/xen-guests.log`, `/var/log/xen/console/guest-rtos1.log` and `guest-media1.log`
+(11.7). Save them before the next reboot: `/var/log` is in RAM.
 
 ---
 
@@ -3192,7 +3412,7 @@ rewiring + `rtos1-start`; full reboot → rtos1 and media1 start, autologin on a
 shows media1; rtos1 10 ms task 9941–10080 µs, RTDS 1000/1000.
 
 Also in commit `d455dba`: the media1 cold-boot start check (9.12.5) and the move of the rear camera
-and the audio mixer from dom0 into media1 over USB/IP (9.13; built, no board test recorded).
+and the audio mixer from dom0 into media1 over USB/IP (9.13; codec hand-over seen in the boot log, camera and sound output untested).
 
 ---
 
@@ -4191,7 +4411,9 @@ media-player, network and HDMI up 45 s after boot.
 
 ### 9.13 Rear camera and sound in media1 over USB/IP (2026-11-04)
 
-**Status: in image `20261104074956` (commit `d455dba`); no board test of this path recorded.**
+**Status: in image `20261104074956` (commit `d455dba`). Board evidence so far: the 2026-11-04 boot
+log (5.6) shows `usbip-host 3-1: stub up` for the codec `0bda:49f6` and media1 setting its audio
+interfaces. Not yet checked: camera picture (no webcam connected), sound on the jack, chimes.**
 
 Why USB/IP: the webcam and the onboard codec are USB devices on the RK3288's host controllers,
 which have no IOMMU, so Xen 4.16 cannot pass them through to a guest. dom0 keeps the controllers
@@ -4304,7 +4526,8 @@ ssh root@192.168.100.4 tail /var/log/audio-mixer.log    playing on plughw:CARD=A
 dmesg | grep -i -A3 "Oops\|NULL pointer"           (nothing: patch 0003)
 ```
 
-The USB/IP lines (from `usbip list -l` on) have not been run on the board yet (9.13).
+Of the USB/IP lines (from `usbip list -l` on), only the codec hand-over has been seen on the board
+(boot log, 5.6); the others have not been run yet (9.13).
 
 ---
 
@@ -4546,7 +4769,7 @@ started with `bootz`/`go`, so nothing was written to the card before it was prov
 | 17 | Dashboard | `-S` snapshot | picture with live values | ✅ | docs/images/cluster-dashboard-board.png |
 | 18 | RTDS race | 3000 × pause/unpause | no panic | ✅ (old Xen: panic < 250) | uart-rtds-repro-*.log |
 | 19 | Poweroff | `poweroff` | guests stopped, power down | ✅ | uart-final-reboot-poweroff.log |
-| 20 | Guest internet | ping 8.8.8.8 | reply | ⏳ no Ethernet | – |
+| 20 | Guest internet | ping 8.8.8.8 from media1 | reply | ⏳ not run (dom0 has Ethernet now) | – |
 | 21 | HDMI picture | 1680x1050 monitor | media1's video on screen | ✅ 2026-11-04 | `/var/log/display-map.log` |
 | 22 | Ignition | ACC off | poweroff after 10 s | ⏳ not wired | – |
 | 23 | Real CAN | adapter | frames in listen-only | ⏳ no adapter | – |
@@ -4557,7 +4780,7 @@ started with `bootz`/`go`, so nothing was written to the card before it was prov
 | 28 | Autostart + autologin | full reboot, UART | rtos1 + media1 up, all consoles logged in, HDMI = media1 | ✅ 2026-11-04 | UART capture |
 | 29 | media1 start check | forced failure / normal starts / restarts and a power cut with the fault | restart, give up after N / "started properly", network up / video + network after 1 restart | ✅ 2026-11-04 | `/var/log/xen-guests.log` |
 | 30 | Rear camera over USB/IP | `vehicle-bench reverse` with a webcam | camera + guide lines on HDMI, video paused | ⏳ not run yet | – |
-| 31 | Sound over USB/IP | `media-link -s warn`, a video with sound | chime and video sound on the jack | ⏳ not run yet | – |
+| 31 | Sound over USB/IP | `media-link -s warn`, a video with sound | chime and video sound on the jack | ⏳ codec attached (`stub up`), output not checked | uart-boot-timed-20261104.log |
 | 32 | USB displays (udl) | DisplayLink DL-1x0/1x5 | second screen | ⏳ no adapter | – |
 
 ---
@@ -4610,7 +4833,7 @@ started with `bootz`/`go`, so nothing was written to the card before it was prov
 
 ## 14. Known limitations
 
-- **Rear camera and sound over USB/IP** (9.13) are built but not yet tested on the board. USB/IP
+- **Rear camera and sound over USB/IP** (9.13): only the codec hand-over is confirmed on the board. USB/IP
   adds network latency and CPU load in dom0 and media1; only YUYV webcams work (MJPEG-only cameras
   are refused).
 - **media1 cold-boot init failure** (9.12.5): recurring after power cuts, handled by the
@@ -4632,7 +4855,7 @@ started with `bootz`/`go`, so nothing was written to the card before it was prov
   latency (≤ ~35 ms measured); only FreeRTOS's checks are real-time.
 - **Power:** two silent hangs under full load until power-cycled (seen in the Android period); use
   a solid 5 V / 3 A supply with a short cable.
-- **Not tested on hardware:** guest internet (no Ethernet), ignition (not wired), real CAN bus (no
+- **Not tested on hardware:** guest internet (not tried; dom0 has Ethernet now), ignition (not wired), real CAN bus (no
   adapter), USB displays (udl, DisplayLink DL-1x0/DL-1x5 only), HDMI pixel-clock patch 0002 with a
   non-standard mode.
 - **`display-map` `rearcam:` sources** need `rear-camera` in dom0, which the image no longer
@@ -4689,8 +4912,9 @@ Rules agreed at the start and followed throughout:
 | Item | Notes |
 |---|---|
 | Test camera and sound over USB/IP on the board | webcam (YUYV) + headphones; 10.5 lists the checks |
+| Faster boot | U-Boot's USB scan (10.7 s) and dom0's DHCP wait (6.9 s) are the two biggest waits (5.6) |
 | Find the media1 cold-boot read corruption | try Xen `bootscrub=1`, a bigger swiotlb-xen pool, a slower SD clock |
-| Test guest internet | needs an Ethernet cable at boot |
+| Test guest internet | dom0 has Ethernet now: `ssh root@192.168.100.4 ping -c3 8.8.8.8` |
 | Wire and test ignition-watch | optocoupler on pin 7, power-hold relay |
 | Real CAN adapter | candleLight/PEAK, listen-only, adapt IDs to the car |
 | USB displays | DisplayLink DL-1x0/1x5 with `udl`, e.g. `usb1=cluster` |
@@ -4749,7 +4973,9 @@ Rules agreed at the start and followed throughout:
 | uart-display-touch*.log, uart-hang-*.log | Android screen experiment and freeze (uart-android-*.log deleted in `5986a0e`) |
 | uart-vehicle-bench.log | automotive bench test |
 | uart-rtds-panic.log, uart-rtds-repro-old.log, uart-rtds-repro-fixed.log | RTDS panic and fix |
-| uart-flash-rtdsfix.log | final boot |
+| uart-flash-rtdsfix.log | final boot (2026-10-25 image) |
+| uart-boot-timed-20261104.log | timestamped UART capture of a reboot of image 20261104074956 (5.6, 2.5) |
+| uart-boot-capture.sh | records a timestamped UART log; `--rel` prints times after reset (5.6.4) |
 | part6/ | Part 6 board test (boot, check, display logs, RESULTS.md) |
 | bitbake-*.log | builds up to 2026-10-27, exit codes checked; later builds: `build/logs/` |
 | baseline/ | original image and U-Boot binaries |
