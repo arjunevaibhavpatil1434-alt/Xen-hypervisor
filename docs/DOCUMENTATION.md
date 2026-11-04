@@ -1594,6 +1594,39 @@ If Xen can't start, the script automatically starts plain Linux instead, so you'
 With only the HDMI display, you pick which one it shows (see "Showing each OS on the HDMI
 screen" in Chapter 12).
 
+### How fast and how big each system is (measured 2026-11-04)
+
+Measured on the board while media1 played its video: boot times from a restart with every serial
+line timestamped, CPU from Xen's own accounting over 10 seconds.
+
+**How long the start takes** (seconds after the board resets):
+
+```
+  0.7 s   U-Boot starts (its "Hit any key" countdown is 2 s)
+ 17.5 s   Xen starts
+ 20.5 s   dom0's Linux starts
+ 37.3 s   rtos1 starts → its TFT dashboard appears about half a second later
+ 38.1 s   media1 starts
+ 42.6 s   dom0 logged in
+ ~53 s    media1 playing on HDMI (good start, ~15 s after it was created)
+ ~61 s    … if media1 had to be restarted once (common after switching on, Step 46)
+```
+
+**What each system gets and uses:**
+
+| | dom0 (Yocto Linux) | rtos1 (FreeRTOS) | media1 (Yocto Linux) |
+|---|---|---|---|
+| Ready after reset | 42.6 s (logged in) | ~38 s (dashboard on the TFT) | ~53 s (~61 s with one restart) |
+| CPU cores | 1, shared on cores 0–2 | 1, **core 3 all to itself** | 2, shared on cores 0–2 |
+| CPU used | 88 % of a core (mostly copying the video to HDMI) | 12 % of its core | ~107 % (decoding the video) |
+| Memory given | 320 MB | 4 MB | 191 MB |
+| Memory used | 44–96 MB | 16.5 KB (of a 64 KB heap) | 45–73 MB |
+| Space on the card | 145 MB partition, 55 MB used | 27.8 KB (one file in dom0) | 122 MB partition, 41 MB used (60 MB free for videos) |
+| Its program | Linux 5.15 `zImage` (10 MB) | `freertos-xen-guest.bin` (27.8 KB) | uses dom0's `zImage` |
+
+The board has 4 cores at 500 MHz and 2048 MB of memory; 1353 MB stays free. The whole card image is
+331.5 MB, of which only 116.6 MB is really written to the card.
+
 ### What's on the SD card
 
 ```
@@ -2240,6 +2273,51 @@ monitor connected): 135 km/h, OVERSPEED red, SIGNAL and RTOS green.
 ![Dashboard snapshot from the board](images/cluster-dashboard-board.png)
 
 Android itself is headless (no picture on HDMI), see Section 14.
+
+### 2.5 Measured boot time and resources (2026-11-04)
+
+Image `20261104074956`, board running dom0 + rtos1 + media1 with media1 playing the default clip.
+
+**Method.** Boot: `reboot` in dom0 while arjune timestamped every UART line (`$EPOCHREALTIME`, t = 0
+at the first U-Boot TPL line); media1 milestones from `/var/log/boot` and `/var/log/xen-guests.log`
+(1 s resolution), aligned on "Starting Xen guest media1". CPU: difference of `xl list` Time(s) over
+10 s (100 % = one core). Memory: `xl list`, `free` in dom0 and media1 (media1 through
+`xl console` in tmux), rtos1 shell `tasks`. Storage: `/proc/partitions`, `df`, bmap of the image.
+
+Boot milestones (seconds after reset):
+
+| t (s) | Event (UART unless noted) |
+|---|---|
+| 0.00 | `U-Boot TPL 2022.01` |
+| 0.67 | U-Boot proper (autoboot countdown 2 s, then loads xen, zImage, dtb from p6) |
+| 17.53 | `Xen 4.16` |
+| 20.45 | dom0 `Booting Linux` |
+| 23.94 | `Run /sbin/init` |
+| 37.30 | `Starting Xen guest rtos1` (TFT init ≈ 0.45 s of delays + ≈ 0.15 s full-screen fill at 8.25 MHz) |
+| 38.08 | `Starting Xen guest media1` |
+| 42.07 | `Starting display-map: hdmi=vnc:5901` |
+| 42.64 | `root@tinker-board:~#` (autologin) |
+| ≈ 46 | media1 start broken (`udevd ... terminated by signal 11`), restart 1/3 (`xen-guests.log`) |
+| ≈ 61 | `media1 started properly after 1 restart(s)` (login prompt + ping) |
+
+A clean media1 start takes ≈ 13–15 s from `xl create` to ready (login, network, `media-player`),
+i.e. ≈ 53 s after reset; with one restart ≈ 61 s.
+
+Resources:
+
+| | Xen | dom0 | rtos1 | media1 |
+|---|---|---|---|---|
+| vCPUs / pCPUs | 4 × Cortex-A17, 500 MHz | 1 vCPU, Pool-0 (CPUs 0–2) | 1 vCPU, pool `rt` (CPU 3) | 2 vCPUs, `cpus="0-2"`, Pool-0 |
+| Scheduler | – | credit2 | RTDS period 1000 µs, budget 1000 µs | credit2 |
+| CPU use (10 s) | – | 88 % (guest-vnc 50 %, QEMU media1 17 %, vif/stub_tx) | 12 % | 107 % (ffmpeg software decode) |
+| Memory assigned | 2048 MB total, 1353 MB free, ≈ 180 MB Xen + reserved | 320 MB (`dom0_mem=320M`) | 4 MB | 191 MB (`memory = 192`) |
+| Memory seen / used | – | 283 MB / 44–96 MB + ≈ 40 MB cache | heap 65536 B, 49032 B free (16504 B used) | 166 MB / 45–73 MB + ≈ 20 MB cache |
+| Storage | p6 `boot` 48 MB: `xen` 917560 B, `zImage` 10.0 MB, dtb 40884 B, 10.9 MB used | p7 `root` 145 MB, 54.6 MB used (44 %) | `/var/lib/xen/rtos1/freertos-xen-guest.bin` 27828 B (in p7) | p8 `media-root` 122 MB, 40.7 MB used (40 %) |
+| Build output | `xen-tinker-board` 0.9 MB | rootfs 60 MB (files), kernel 10.0 MB | 27.8 KB | `media-guest-image…ext4` 122.5 MB (44 MB of files); kernel shared with dom0 |
+
+Card: SC16G, 14.8 GiB, p1–p5 (loader, U-Boot, reserved) ≈ 16 MB. Image
+`tinker-xen-test-image-tinker-board-20261104074956.rootfs.wic` 331.5 MB, bmap 29849 of 84876
+4-KiB blocks mapped (116.6 MB written by `bmaptool`).
 
 ---
 
